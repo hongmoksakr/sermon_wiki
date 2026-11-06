@@ -888,10 +888,14 @@
       
       // Load Data from window.ARCHIVE_DATA (loaded from ./data.js)
       DB = window.ARCHIVE_DATA || window.VAULT_DATA;
-      if (!DB || !DB.docs) {
+      if (!DB || !DB.docs || typeof DB.docs !== 'object') {
         renderDataLoadError();
         return;
       }
+
+      // data.js의 실제 스키마(raw_tree/wiki_tree는 배열이 아닌 객체)를
+      // 화면 렌더러가 사용하는 공통 트리 구조로 변환합니다.
+      normalizeArchiveTrees();
 
       // Initialize Mermaid
       if (window.mermaid) {
@@ -948,33 +952,62 @@
       if (window.lucide) lucide.createIcons();
     }
 
+    // 저장소 접근이 차단된 file:// 환경에서도 앱 전체가 중단되지 않도록 보호합니다.
+    function readStorage(key, fallback = null, useSession = false) {
+      try {
+        const storage = useSession ? window.sessionStorage : window.localStorage;
+        const value = storage.getItem(key);
+        return value === null ? fallback : value;
+      } catch (error) {
+        return fallback;
+      }
+    }
+
+    function writeStorage(key, value, useSession = false) {
+      try {
+        const storage = useSession ? window.sessionStorage : window.localStorage;
+        storage.setItem(key, value);
+        return true;
+      } catch (error) {
+        return false;
+      }
+    }
+
+    function removeStorage(key, useSession = false) {
+      try {
+        const storage = useSession ? window.sessionStorage : window.localStorage;
+        storage.removeItem(key);
+      } catch (error) {
+        // 저장소를 사용할 수 없는 환경에서는 메모리 상태만 유지합니다.
+      }
+    }
+
     // Preferences (Theme, Font Size, Font Family)
     function initPreferences() {
-      const savedTheme = localStorage.getItem('archive_theme') || 'dark';
-      if (savedTheme === 'dark') {
-        document.documentElement.classList.add('dark');
-      } else {
-        document.documentElement.classList.remove('dark');
-      }
+      const savedTheme = readStorage('archive_theme', 'dark');
+      document.documentElement.classList.toggle('dark', savedTheme === 'dark');
 
-      const savedSizeIdx = parseInt(localStorage.getItem('archive_font_idx'), 10);
+      const savedSizeIdx = parseInt(readStorage('archive_font_idx', ''), 10);
       if (!isNaN(savedSizeIdx) && savedSizeIdx >= 0 && savedSizeIdx < FONT_SIZES.length) {
         fontSizeIndex = savedSizeIdx;
       }
       applyFontSize();
 
-      isSerif = localStorage.getItem('archive_font_serif') === 'true';
+      isSerif = readStorage('archive_font_serif', 'false') === 'true';
       applyFontFamily();
 
       // Load Bookmarks & Recent History & Author Unlock State
       try {
-        bookmarksList = JSON.parse(localStorage.getItem('archive_bookmarks') || '[]');
-        recentHistoryList = JSON.parse(localStorage.getItem('archive_recent') || '[]');
-        isAuthorUnlocked = sessionStorage.getItem('archive_author_unlocked') === 'true' || localStorage.getItem('archive_author_unlocked') === 'true';
-      } catch (e) {
+        const savedBookmarks = JSON.parse(readStorage('archive_bookmarks', '[]'));
+        const savedRecents = JSON.parse(readStorage('archive_recent', '[]'));
+        bookmarksList = Array.isArray(savedBookmarks) ? savedBookmarks : [];
+        recentHistoryList = Array.isArray(savedRecents) ? savedRecents : [];
+      } catch (error) {
         bookmarksList = [];
         recentHistoryList = [];
       }
+      isAuthorUnlocked = readStorage('archive_author_unlocked', 'false', true) === 'true'
+        || readStorage('archive_author_unlocked', 'false') === 'true';
     }
 
     function showToast(msg) {
@@ -1034,7 +1067,7 @@
 
     function toggleTheme() {
       const isDark = document.documentElement.classList.toggle('dark');
-      localStorage.setItem('archive_theme', isDark ? 'dark' : 'light');
+      writeStorage('archive_theme', isDark ? 'dark' : 'light');
       if (window.mermaid) {
         mermaid.initialize({ startOnLoad: false, theme: isDark ? 'dark' : 'default' });
         if (currentDocId) renderMermaidDiagrams();
@@ -1043,7 +1076,7 @@
 
     function changeFontSize(delta) {
       fontSizeIndex = Math.max(0, Math.min(FONT_SIZES.length - 1, fontSizeIndex + delta));
-      localStorage.setItem('archive_font_idx', fontSizeIndex);
+      writeStorage('archive_font_idx', String(fontSizeIndex));
       applyFontSize();
     }
 
@@ -1055,7 +1088,7 @@
 
     function toggleFontFamily() {
       isSerif = !isSerif;
-      localStorage.setItem('archive_font_serif', isSerif);
+      writeStorage('archive_font_serif', String(isSerif));
       applyFontFamily();
     }
 
@@ -1069,6 +1102,70 @@
       if (labelEl) {
         labelEl.textContent = isSerif ? '명조' : '고딕';
       }
+    }
+
+    // 실제 ARCHIVE_DATA의 폴더 트리를 사이드바가 요구하는 공통 형식으로 변환합니다.
+    function normalizeArchiveTrees() {
+      const toDocNode = (item) => {
+        if (!item || !item.id || !DB.docs[item.id]) return null;
+        const doc = DB.docs[item.id];
+        return {
+          type: 'doc',
+          id: item.id,
+          title: item.title || doc.title || doc.basename || item.id,
+          date: item.date || doc.date || ''
+        };
+      };
+
+      const makeFolder = (name, children) => ({
+        type: 'folder',
+        name: name || '기타',
+        children: (children || []).filter(Boolean)
+      });
+
+      const rawSource = DB.raw_tree || {};
+      const rawMenu = [];
+
+      (rawSource.sermons || []).forEach((period) => {
+        const children = [];
+        (period.root_docs || []).forEach((item) => {
+          const node = toDocNode(item);
+          if (node) children.push(node);
+        });
+        (period.subfolders || []).forEach((subfolder) => {
+          const docs = (subfolder.docs || []).map(toDocNode).filter(Boolean);
+          children.push(makeFolder(subfolder.folder_name || subfolder.folder || subfolder.folder_id, docs));
+        });
+        rawMenu.push(makeFolder(period.period_name || period.period_id, children));
+      });
+
+      const articleNodes = (rawSource.articles || []).map(toDocNode).filter(Boolean);
+      if (articleNodes.length) rawMenu.push(makeFolder('외부 기고문 (Articles)', articleNodes));
+
+      const wikiSource = DB.wiki_tree || {};
+      const wikiMenu = [
+        makeFolder('종합 보고서 (Synthesis)', (wikiSource.synthesis || []).map(toDocNode)),
+        makeFolder('강해 시리즈 (Series)', (wikiSource.series || []).map(toDocNode)),
+        makeFolder('신학자 노트 (Theologians)', (wikiSource.theologians || []).map(toDocNode)),
+        makeFolder('신학 개념 (Concepts)', (wikiSource.concepts || []).map(toDocNode))
+      ];
+
+      (wikiSource.sources_by_period || []).forEach((period) => {
+        wikiMenu.push(makeFolder(
+          period.period_name || period.period_id || '개별 분석 자료',
+          (period.docs || []).map(toDocNode)
+        ));
+      });
+
+      if ((wikiSource.meta_docs || []).length) {
+        wikiMenu.push(makeFolder('아카이브 관리 문서', (wikiSource.meta_docs || []).map(toDocNode)));
+      }
+
+      DB.raw_menu_tree = rawMenu;
+      DB.wiki_menu_tree = wikiMenu;
+
+      // 새 데이터 번들은 link_index 대신 lookup을 사용하므로 호환 별칭을 둡니다.
+      if (!DB.link_index && DB.lookup) DB.link_index = DB.lookup;
     }
 
     // Build Backlinks Index by scanning [[...]] in all documents
@@ -1101,27 +1198,29 @@
       if (DB.docs[targetStr]) return targetStr;
       if (DB.docs[clean + '.md']) return clean + '.md';
 
-      if (DB.link_index) {
-        if (DB.link_index[clean]) return DB.link_index[clean];
-        if (DB.link_index[lower]) return DB.link_index[lower];
-        if (DB.link_index[norm]) return DB.link_index[norm];
+      const lookup = DB.lookup || DB.link_index || {};
+      const lookupCandidates = [targetStr, clean, clean + '.md', lower, norm];
+      for (const candidate of lookupCandidates) {
+        const targetId = lookup[candidate];
+        if (targetId && DB.docs[targetId]) return targetId;
       }
 
-      // Fallback search by basename
+      // Fallback search by basename or title, ignoring spaces/underscores and case.
+      const normalizedTarget = norm.replace(/\.md$/i, '');
       for (const [id, doc] of Object.entries(DB.docs)) {
-        if (doc.basename === clean || doc.basename.toLowerCase() === lower) {
-          return id;
-        }
+        const base = String(doc.basename || '').toLowerCase().replace(/[\s_]+/g, '_');
+        const title = String(doc.title || '').toLowerCase().replace(/[\s_]+/g, '_');
+        if (base === normalizedTarget || title === normalizedTarget) return id;
       }
       return null;
     }
 
     // Set initial open folders in the sidebar
     function initDefaultOpenFolders() {
-      if (DB.raw_tree && DB.raw_tree.length > 0) {
+      if (DB.raw_menu_tree && DB.raw_menu_tree.length > 0) {
         openFolders.add('raw_0'); // Open Sermons
       }
-      if (DB.wiki_tree && DB.wiki_tree.length > 0) {
+      if (DB.wiki_menu_tree && DB.wiki_menu_tree.length > 0) {
         openFolders.add('wiki_0'); // Open Synthesis
         openFolders.add('wiki_1'); // Open Series
       }
@@ -1140,11 +1239,11 @@
 
       // Render RAW Tree
       const rawContainer = document.getElementById('raw-menu-container');
-      rawContainer.innerHTML = renderTreeNodes(DB.raw_tree || [], 'raw', query);
+      rawContainer.innerHTML = renderTreeNodes(DB.raw_menu_tree || [], 'raw', query);
 
       // Render WIKI Tree
       const wikiContainer = document.getElementById('wiki-menu-container');
-      wikiContainer.innerHTML = renderTreeNodes(DB.wiki_tree || [], 'wiki', query);
+      wikiContainer.innerHTML = renderTreeNodes(DB.wiki_menu_tree || [], 'wiki', query);
 
       if (window.lucide) lucide.createIcons();
     }
@@ -1273,8 +1372,8 @@
         }
         return false;
       }
-      searchTree(DB.raw_tree || [], 'raw');
-      searchTree(DB.wiki_tree || [], 'wiki');
+      searchTree(DB.raw_menu_tree || [], 'raw');
+      searchTree(DB.wiki_menu_tree || [], 'wiki');
     }
 
     // Render Home Dashboard View
@@ -1490,13 +1589,13 @@
       recentHistoryList = recentHistoryList.filter(item => item.id !== docId);
       recentHistoryList.unshift({ id: docId, timestamp: Date.now() });
       if (recentHistoryList.length > 25) recentHistoryList = recentHistoryList.slice(0, 25);
-      localStorage.setItem('archive_recent', JSON.stringify(recentHistoryList));
+      writeStorage('archive_recent', JSON.stringify(recentHistoryList));
       renderHomeBookmarksAndRecent();
     }
 
     function clearRecentHistory() {
       recentHistoryList = [];
-      localStorage.setItem('archive_recent', '[]');
+      writeStorage('archive_recent', '[]');
       renderHomeBookmarksAndRecent();
       if (!document.getElementById('library-modal').classList.contains('hidden')) {
         renderLibraryModalContent();
@@ -1519,7 +1618,7 @@
         bookmarksList.unshift(docId);
         showToast('⭐ 내 북마크 보관함에 저장되었습니다.');
       }
-      localStorage.setItem('archive_bookmarks', JSON.stringify(bookmarksList));
+      writeStorage('archive_bookmarks', JSON.stringify(bookmarksList));
       updateBookmarkBadges();
       renderHomeBookmarksAndRecent();
       if (!document.getElementById('library-modal').classList.contains('hidden')) {
@@ -1648,7 +1747,8 @@
 
     // Navigation & Routing
     function handleHashChange() {
-      const hash = decodeURIComponent(window.location.hash.slice(1));
+      let hash = window.location.hash.slice(1);
+      try { hash = decodeURIComponent(hash); } catch (error) { /* 잘못된 퍼센트 인코딩은 원문 hash로 처리 */ }
       if (!hash || hash === 'home') {
         showHomeView();
       } else {
@@ -1702,6 +1802,16 @@
       if (!doc) return;
       currentDocId = docId;
       calloutQuotesStore = [];
+
+      // 현재 문서가 속한 폴더를 펼치고 활성 문서 표시를 즉시 갱신합니다.
+      expandParentsForDoc(docId);
+      const sidebarFilter = document.getElementById('sidebar-filter-input');
+      renderSidebarMenus(sidebarFilter ? sidebarFilter.value : '');
+
+      // 원본 기고문과 연결된 WIKI 분석 문서를 cross_map에서 조회합니다.
+      const counterpartId = (DB.cross_map && DB.cross_map.raw_to_wiki)
+        ? DB.cross_map.raw_to_wiki[docId]
+        : null;
 
       // Record in recent history & update bookmark UI
       recordRecentDoc(docId);
@@ -1883,7 +1993,7 @@
       const validCodes = ['0414', 'author', 'hdw', '홍동우', '2026'];
       if (validCodes.includes(val)) {
         isAuthorUnlocked = true;
-        sessionStorage.setItem('archive_author_unlocked', 'true');
+        writeStorage('archive_author_unlocked', 'true', true);
         closeAuthorUnlockModal();
         showToast('🔓 저자 인증이 완료되어 전체 기고문 원문이 해제되었습니다.');
         if (currentDocId) renderDocument(currentDocId);
@@ -1895,8 +2005,8 @@
 
     function lockAuthorMode() {
       isAuthorUnlocked = false;
-      sessionStorage.removeItem('archive_author_unlocked');
-      localStorage.removeItem('archive_author_unlocked');
+      removeStorage('archive_author_unlocked', true);
+      removeStorage('archive_author_unlocked');
       showToast('🔒 유료 매체 저작권 보호 모드가 다시 활성화되었습니다.');
       if (currentDocId) renderDocument(currentDocId);
       renderSidebarMenus(document.getElementById('sidebar-filter-input').value);
@@ -2015,7 +2125,9 @@
       });
 
       // 3. Parse Markdown using Marked.js
-      let html = window.marked ? marked.parse(processed) : processed;
+      let html = window.marked && typeof marked.parse === 'function'
+        ? marked.parse(processed)
+        : `<pre class="whitespace-pre-wrap text-sm">${escapeHtml(processed)}</pre>`;
 
       // 4. Transform Obsidian Callouts inside Blockquotes: > [!quote] Title + 📋 원클릭 인용 복사 버튼
       html = html.replace(/<blockquote>\s*<p>\[!(\w+)\]\s*([^\n<]*)(?:<br>|\n)?([\s\S]*?)<\/blockquote>/gi, (match, type, title, rest) => {
@@ -2030,8 +2142,9 @@
         const headerTitle = (title && title.trim()) ? title.trim() : st.defaultTitle;
 
         // Strip HTML tags to create clean plain text for One-Click Quote Copy
+        const calloutContent = String(rest || '').replace(/<\/p>\s*$/i, '').trim();
         const tempDiv = document.createElement('div');
-        tempDiv.innerHTML = `<p>${rest}`;
+        tempDiv.innerHTML = calloutContent;
         const plainQuote = (tempDiv.textContent || tempDiv.innerText || '').trim();
         const docTitle = (currentDocId && DB.docs[currentDocId]) ? DB.docs[currentDocId].title : '';
         const quoteIdx = calloutQuotesStore.length;
@@ -2049,7 +2162,7 @@
               </button>
             </div>
             <div class="text-sm sm:text-[15.5px] leading-relaxed space-y-2 text-slate-700 dark:text-slate-200">
-              <p>${rest}
+              ${calloutContent}
             </div>
           </div>
         `;
@@ -2076,6 +2189,7 @@
 
       if (headings.length < 2) {
         tocWrapper.classList.add('hidden');
+        tocList.innerHTML = '';
         return;
       }
 
@@ -2297,8 +2411,10 @@
         if (!q) return true;
         const inTitle = (doc.title || '').toLowerCase().includes(q);
         const inSubject = (doc.subject || '').toLowerCase().includes(q);
-        const inScripture = (doc.scripture || []).join(' ').toLowerCase().includes(q);
-        const inTags = (doc.tags || []).join(' ').toLowerCase().includes(q);
+        const scriptureText = Array.isArray(doc.scripture) ? doc.scripture.join(' ') : String(doc.scripture || '');
+        const tagsText = Array.isArray(doc.tags) ? doc.tags.join(' ') : String(doc.tags || '');
+        const inScripture = scriptureText.toLowerCase().includes(q);
+        const inTags = tagsText.toLowerCase().includes(q);
         const inBody = (doc.body || '').toLowerCase().includes(q);
         return inTitle || inSubject || inScripture || inTags || inBody;
       });
@@ -2313,7 +2429,7 @@
 
       listEl.innerHTML = filtered.slice(0, 40).map(doc => {
         const isRaw = doc.section === 'raw';
-        const badge = isRaw ? '📖 RAW' : `🧠 ${doc.category.toUpperCase()}`;
+        const badge = isRaw ? '📖 RAW' : `🧠 ${String(doc.category || 'WIKI').toUpperCase()}`;
         let snippet = doc.subject || '';
         if (q && doc.body) {
           const idx = doc.body.toLowerCase().indexOf(q);
