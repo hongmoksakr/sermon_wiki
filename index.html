@@ -2029,7 +2029,7 @@
         // 전체 제한 목록에 등록된 아티클만 기존 티저 + 전체 잠금 커튼을 사용합니다.
         const fullMd = doc.body || '';
         const paragraphs = fullMd.split(/\n\s*\n/);
-        const teaserMd = paragraphs.slice(0, Math.min(4, paragraphs.length)).join('\n\n');
+        const teaserMd = paragraphs.slice(0, Math.min(8, paragraphs.length)).join('\n\n');
         bodyEl.innerHTML = `<div class="article-teaser-mask pb-10 select-none">${parseObsidianMarkdown(teaserMd)}</div>`;
         renderPaywallCurtain(doc, counterpartId);
       } else {
