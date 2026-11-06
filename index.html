@@ -810,8 +810,8 @@
 
       <div class="space-y-2">
         <label class="block text-xs font-semibold text-slate-700 dark:text-slate-300">저자 인증 패스코드</label>
-        <input id="author-passcode-input" type="password" onkeydown="if(event.key==='Enter') confirmAuthorUnlock()" placeholder="인증 코드 입력 (데모: 0414 또는 author)" class="w-full px-3.5 py-2.5 rounded-xl text-sm bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-900 dark:text-white focus:outline-none focus:border-brand-500" />
-        <p id="author-unlock-error" class="hidden text-xs text-rose-500 font-medium">인증 코드가 일치하지 않습니다. (힌트: 0414 또는 author)</p>
+        <input id="author-passcode-input" type="password" onkeydown="if(event.key==='Enter') confirmAuthorUnlock()" placeholder="인증 코드 입력" class="w-full px-3.5 py-2.5 rounded-xl text-sm bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-900 dark:text-white focus:outline-none focus:border-brand-500" />
+        <p id="author-unlock-error" class="hidden text-xs text-rose-500 font-medium">인증 코드가 일치하지 않습니다.)</p>
       </div>
 
       <div class="flex items-center justify-end gap-2 pt-2">
@@ -2116,7 +2116,7 @@
       const err = document.getElementById('author-unlock-error');
       const val = (input.value || '').trim().toLowerCase();
       // Passcodes accepted for author verification
-      const validCodes = ['0414', 'author', 'hdw', '홍동우', '2026'];
+      const validCodes = ['davidhong'];
       if (validCodes.includes(val)) {
         isAuthorUnlocked = true;
         writeStorage('archive_author_unlocked', 'true', true);
