@@ -9,10 +9,13 @@
   <link rel="stylesheet" as="style" crossorigin href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css" />
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="preconnect" href="https://cdn.tailwindcss.com" crossorigin>
+  <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
+  <link rel="preconnect" href="https://unpkg.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500&family=Noto+Serif+KR:wght@400;600;700&display=swap" rel="stylesheet">
 
   <!-- Tailwind CSS CDN -->
-  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdn.tailwindcss.com" defer></script>
   <script>
     tailwind.config = {
       darkMode: 'class',
@@ -46,14 +49,10 @@
   </script>
 
   <!-- Lucide Icons -->
-  <script src="https://unpkg.com/lucide@latest"></script>
-  <!-- Marked.js for Markdown Parsing -->
-  <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
-  <!-- Mermaid.js for Diagrams -->
-  <script src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"></script>
-
-  <!-- 동일한 폴더에 위치한 data.js 로드 -->
-  <script src="./data.js"></script>
+  <script src="https://unpkg.com/lucide@latest" async onload="if (window.lucide) window.lucide.createIcons()"></script>
+  <!-- Marked.js는 실제 문서를 열 때 지연 로드합니다. -->
+  <!-- Mermaid.js는 다이어그램이 포함된 문서를 열 때만 지연 로드합니다. -->
+  <!-- data.js는 HTML의 첫 화면이 그려진 뒤 비동기로 불러옵니다. -->
 
   <style>
     :root {
@@ -523,7 +522,10 @@
       
       <!-- 1. DASHBOARD / HOME VIEW -->
       <div id="home-view" class="space-y-10">
-        
+        <div id="app-loading-state" class="flex items-center gap-3 px-4 py-3 rounded-xl border border-brand-500/20 bg-brand-500/5 text-sm text-slate-600 dark:text-slate-300" role="status" aria-live="polite">
+          <span class="w-4 h-4 rounded-full border-2 border-brand-500/30 border-t-brand-500 animate-spin shrink-0"></span>
+          <span>아카이브 데이터를 불러오는 중입니다. 첫 화면을 먼저 표시하고 자료를 준비하고 있습니다.</span>
+        </div>
         <!-- Hero Banner -->
         <div class="relative rounded-3xl overflow-hidden border border-slate-200/80 dark:border-slate-800 bg-gradient-to-br from-white via-slate-50 to-indigo-50/40 dark:from-slate-900 dark:via-[#0F1626] dark:to-brand-900/20 p-6 sm:p-10 shadow-sm bg-grid-pattern">
           <div class="relative z-10 max-w-2xl space-y-4">
@@ -931,6 +933,11 @@
   <script>
     // Global State
     let DB = null;
+    let ALL_DOCS = [];
+    let backlinksIndexReady = false;
+    let mermaidLoadPromise = null;
+    let markedLoadPromise = null;
+    let pendingDocumentId = null;
     let currentDocId = null;
     let currentSearchFilter = 'all';
     let currentLibraryTab = 'bookmarks';
@@ -952,33 +959,52 @@
     let DOC_LINK_PATH_INDEX = new Map();
     let DOC_LINK_ALIAS_INDEX = new Map();
 
-    // Initialize Application
+    // Initialize Application: show the static shell first, then load the large archive bundle.
     document.addEventListener('DOMContentLoaded', () => {
       initPreferences();
-      
-      // Load Data from window.ARCHIVE_DATA (loaded from ./data.js)
+      loadArchiveData()
+        .then(initializeArchiveApplication)
+        .catch((error) => {
+          console.error('Archive data loading failed:', error);
+          renderDataLoadError();
+        });
+    });
+
+    function loadArchiveData() {
+      return new Promise((resolve, reject) => {
+        if (window.ARCHIVE_DATA || window.VAULT_DATA) {
+          resolve();
+          return;
+        }
+
+        const dataScript = document.createElement('script');
+        dataScript.src = './data.js';
+        dataScript.async = true;
+        dataScript.onload = () => resolve();
+        dataScript.onerror = () => reject(new Error('data.js를 불러오지 못했습니다.'));
+        document.head.appendChild(dataScript);
+      });
+    }
+
+    function initializeArchiveApplication() {
       DB = window.ARCHIVE_DATA || window.VAULT_DATA;
       if (!DB || !DB.docs) {
         renderDataLoadError();
         return;
       }
 
+      // 캐시된 문서 배열을 만들어 반복적인 Object.values() 생성을 줄입니다.
+      ALL_DOCS = Object.values(DB.docs);
       buildDocumentLinkIndex();
 
-      // Initialize Mermaid
-      if (window.mermaid) {
-        mermaid.initialize({
-          startOnLoad: false,
-          theme: document.documentElement.classList.contains('dark') ? 'dark' : 'default',
-          securityLevel: 'loose'
-        });
-      }
-
-      buildBacklinksIndex();
+      // Mermaid는 초기 로딩에서 제외하고, 실제 다이어그램이 있는 글을 열 때 불러옵니다.
       initDefaultOpenFolders();
       renderSidebarMenus();
       renderHomeDashboard();
       updateBookmarkBadges();
+
+      // Backlinks는 전체 문서 본문을 스캔하므로 첫 화면 렌더링 이후 분할 처리합니다.
+      buildBacklinksIndexAsync();
 
       // Handle Initial Hash Route
       handleHashChange();
@@ -1000,11 +1026,15 @@
         }
       });
 
+      const loadingState = document.getElementById('app-loading-state');
+      if (loadingState) loadingState.classList.add('hidden');
       if (window.lucide) lucide.createIcons();
-    });
+    }
 
     // Data Load Error Fallback UI
     function renderDataLoadError() {
+      const loadingState = document.getElementById('app-loading-state');
+      if (loadingState) loadingState.classList.add('hidden');
       const homeView = document.getElementById('home-view');
       homeView.innerHTML = `
         <div class="p-8 rounded-2xl border border-red-500/30 bg-red-500/5 text-center space-y-4 my-12">
@@ -1143,23 +1173,47 @@
       }
     }
 
-    // Build Backlinks Index by scanning [[...]] in all documents
-    function buildBacklinksIndex() {
+    // Build backlinks in small batches so the initial render and first interaction stay responsive.
+    function buildBacklinksIndexAsync() {
+      if (!DB || backlinksIndexReady) return;
       backlinksMap = {};
-      const docs = DB.docs;
+      const docs = ALL_DOCS;
       const wikiLinkRegex = /\[\[([^\]|#]+)(?:[|#][^\]]*)?\]\]/g;
+      let cursor = 0;
 
-      for (const [sourceId, doc] of Object.entries(docs)) {
-        if (!doc.body) continue;
-        let match;
-        while ((match = wikiLinkRegex.exec(doc.body)) !== null) {
-          const targetRaw = match[1].trim();
-          const targetId = resolveWikiLinkTarget(targetRaw);
-          if (targetId && targetId !== sourceId) {
-            if (!backlinksMap[targetId]) backlinksMap[targetId] = new Set();
-            backlinksMap[targetId].add(sourceId);
+      const processChunk = () => {
+        const chunkEnd = Math.min(cursor + 10, docs.length);
+        for (; cursor < chunkEnd; cursor++) {
+          const doc = docs[cursor];
+          if (!doc || !doc.body) continue;
+          wikiLinkRegex.lastIndex = 0;
+          let match;
+          while ((match = wikiLinkRegex.exec(doc.body)) !== null) {
+            const targetId = resolveWikiLinkTarget(match[1].trim());
+            if (targetId && targetId !== doc.id) {
+              if (!backlinksMap[targetId]) backlinksMap[targetId] = new Set();
+              backlinksMap[targetId].add(doc.id);
+            }
           }
         }
+
+        if (cursor < docs.length) {
+          if ('requestIdleCallback' in window) {
+            requestIdleCallback(processChunk, { timeout: 250 });
+          } else {
+            setTimeout(processChunk, 20);
+          }
+          return;
+        }
+
+        backlinksIndexReady = true;
+        if (currentDocId) renderBacklinks(currentDocId);
+      };
+
+      if ('requestIdleCallback' in window) {
+        requestIdleCallback(processChunk, { timeout: 250 });
+      } else {
+        setTimeout(processChunk, 20);
       }
     }
 
@@ -1555,7 +1609,7 @@
       `).join('');
 
       // Synthesis Reports Grid
-      const synthesisDocs = Object.values(DB.docs).filter(d => d.category === 'synthesis').sort((a, b) => a.id.localeCompare(b.id));
+      const synthesisDocs = ALL_DOCS.filter(d => d.category === 'synthesis').sort((a, b) => a.id.localeCompare(b.id));
       document.getElementById('home-synthesis-grid').innerHTML = synthesisDocs.map(doc => `
         <div onclick="openDoc('${escapeJs(doc.id)}')" class="group cursor-pointer p-4 rounded-2xl border border-slate-200/80 dark:border-slate-800 bg-white dark:bg-slate-900/50 hover:border-brand-500 dark:hover:border-brand-400 transition shadow-sm flex items-start justify-between gap-3">
           <div class="space-y-1 min-w-0">
@@ -1617,8 +1671,8 @@
       `).join('');
 
       // Concepts & Theologians Clouds
-      const concepts = Object.values(DB.docs).filter(d => d.category === 'concepts');
-      const theologians = Object.values(DB.docs).filter(d => d.category === 'theologians');
+      const concepts = ALL_DOCS.filter(d => d.category === 'concepts');
+      const theologians = ALL_DOCS.filter(d => d.category === 'theologians');
       
       document.getElementById('concept-count-label').textContent = `${concepts.length}개`;
       document.getElementById('theologian-count-label').textContent = `${theologians.length}명`;
@@ -1668,7 +1722,7 @@
 
     function refreshInspirationWidget() {
       if (!DB || !DB.docs) return;
-      const allDocs = Object.values(DB.docs);
+      const allDocs = ALL_DOCS;
       const sermons = allDocs.filter(d => (d.section === 'raw' && d.category === 'sermons') || d.category === 'sources');
       const concepts = allDocs.filter(d => d.category === 'concepts' || d.category === 'synthesis');
 
@@ -1951,6 +2005,26 @@
 
     // Render Document Content
     function renderDocument(docId) {
+      if (!window.marked) {
+        pendingDocumentId = docId;
+        if (!markedLoadPromise) {
+          loadMarkedLibrary().then(() => {
+            let targetId = pendingDocumentId;
+            pendingDocumentId = null;
+            try {
+              const hash = decodeURIComponent(window.location.hash.slice(1));
+              targetId = (DB.docs[hash] ? hash : resolveWikiLinkTarget(hash)) || targetId;
+            } catch (e) { /* Keep the latest requested document ID. */ }
+            if (targetId && DB.docs[targetId]) renderDocument(targetId);
+          }).catch((error) => {
+            markedLoadPromise = null; // 다음 시도에서 다시 로드할 수 있도록 실패 상태를 초기화합니다.
+            console.error('Markdown parser loading failed:', error);
+            showToast('문서 표시 도구를 불러오지 못했습니다. 네트워크 연결을 확인해 주세요.');
+          });
+        }
+        return;
+      }
+
       const doc = DB.docs[docId];
       if (!doc) return;
       currentDocId = docId;
@@ -2239,6 +2313,24 @@
       return `<span class="px-2 py-0.5 rounded bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400">${escapeHtml(label)}</span>`;
     }
 
+    // Marked.js는 초기 화면에 필요하지 않으므로 문서를 처음 열 때만 내려받습니다.
+    function loadMarkedLibrary() {
+      if (window.marked) return Promise.resolve(window.marked);
+      if (markedLoadPromise) return markedLoadPromise;
+
+      markedLoadPromise = new Promise((resolve, reject) => {
+        const script = document.createElement('script');
+        script.src = 'https://cdn.jsdelivr.net/npm/marked/marked.min.js';
+        script.async = true;
+        script.onload = () => window.marked
+          ? resolve(window.marked)
+          : reject(new Error('Marked.js를 초기화하지 못했습니다.'));
+        script.onerror = () => reject(new Error('Marked.js를 불러오지 못했습니다.'));
+        document.head.appendChild(script);
+      });
+      return markedLoadPromise;
+    }
+
     // Markdown + Obsidian Syntax Parser
     function parseObsidianMarkdown(mdText) {
       if (!mdText) return '';
@@ -2272,7 +2364,7 @@
       });
 
       // 4. Parse Markdown using Marked.js
-      let html = window.marked ? marked.parse(processed) : processed;
+      let html = marked.parse(processed);
 
       // 5. Transform Obsidian Callouts inside Blockquotes: > [!quote] Title + 📋 원클릭 인용 복사 버튼
       html = html.replace(/<blockquote>\s*<p>\[!(\w+)\]\s*([^\n<]*)(?:<br>|\n)?([\s\S]*?)<\/blockquote>/gi, (match, type, title, rest) => {
@@ -2363,16 +2455,42 @@
       }
     }
 
-    // Render Mermaid Diagrams
+    // Mermaid is a relatively large library; fetch it only for documents containing diagrams.
+    function loadMermaidLibrary() {
+      if (window.mermaid) return Promise.resolve(window.mermaid);
+      if (mermaidLoadPromise) return mermaidLoadPromise;
+
+      mermaidLoadPromise = new Promise((resolve, reject) => {
+        const script = document.createElement('script');
+        script.src = 'https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js';
+        script.async = true;
+        script.onload = () => {
+          if (window.mermaid) {
+            mermaid.initialize({
+              startOnLoad: false,
+              theme: document.documentElement.classList.contains('dark') ? 'dark' : 'default',
+              securityLevel: 'loose'
+            });
+            resolve(mermaid);
+          } else {
+            reject(new Error('Mermaid 라이브러리를 초기화하지 못했습니다.'));
+          }
+        };
+        script.onerror = () => reject(new Error('Mermaid 라이브러리를 불러오지 못했습니다.'));
+        document.head.appendChild(script);
+      });
+      return mermaidLoadPromise;
+    }
+
     async function renderMermaidDiagrams() {
-      if (!window.mermaid) return;
       const nodes = document.querySelectorAll('#doc-body .mermaid');
-      if (nodes.length > 0) {
-        try {
-          await mermaid.run({ nodes });
-        } catch (err) {
-          console.warn('Mermaid rendering warning:', err);
-        }
+      if (!nodes.length) return;
+      try {
+        const mermaidInstance = await loadMermaidLibrary();
+        await mermaidInstance.run({ nodes });
+      } catch (err) {
+        mermaidLoadPromise = null; // CDN 일시 오류 후 재시도할 수 있도록 합니다.
+        console.warn('Mermaid rendering warning:', err);
       }
     }
 
@@ -2406,7 +2524,7 @@
       const currentDoc = DB.docs[docId];
       if (!currentDoc) return;
 
-      const sameCategoryDocs = Object.values(DB.docs).filter(
+      const sameCategoryDocs = ALL_DOCS.filter(
         d => d.section === currentDoc.section && d.category === currentDoc.category
       );
       const idx = sameCategoryDocs.findIndex(d => d.id === docId);
@@ -2546,7 +2664,7 @@
 
     function handleGlobalSearch(query) {
       const q = query.trim().toLowerCase();
-      const allDocs = Object.values(DB.docs);
+      const allDocs = ALL_DOCS;
 
       const filtered = allDocs.filter(doc => {
         if (currentSearchFilter === 'raw' && doc.section !== 'raw') return false;
