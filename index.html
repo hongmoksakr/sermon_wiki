@@ -21,6 +21,7 @@
           fontFamily: {
             sans: ['Pretendard', '-apple-system', 'BlinkMacSystemFont', 'system-ui', 'sans-serif'],
             serif: ['"Noto Serif KR"', 'Georgia', 'serif'],
+            ridi: ['Ridibatang', '"Noto Serif KR"', 'Georgia', 'serif'],
             mono: ['"JetBrains Mono"', 'monospace'],
           },
           colors: {
@@ -63,6 +64,13 @@
   <script src="./data.js"></script>
 
   <style>
+    @font-face {
+      font-family: 'Ridibatang';
+      src: url('https://cdn.jsdelivr.net/gh/projectnoonnu/noonfonts_twelve@1.0/RIDIBatang.woff') format('woff');
+      font-weight: normal;
+      font-display: swap;
+    }
+
     :root {
       --doc-font-size: 17px;
       --doc-line-height: 1.85;
@@ -99,36 +107,36 @@
 
     /* Full-Page Micro Dot & Grid Backdrop Pattern */
     .bg-page-pattern {
-      background-size: 24px 24px, 96px 96px;
+      background-size: 24px 24px, 96px 96px, 96px 96px;
       background-image:
-        radial-gradient(rgba(100, 116, 139, 0.14) 1px, transparent 1px),
-        linear-gradient(to right, rgba(148, 163, 184, 0.045) 1px, transparent 1px),
-        linear-gradient(to bottom, rgba(148, 163, 184, 0.045) 1px, transparent 1px);
-      mask-image: radial-gradient(ellipse 100% 85% at 50% 15%, rgba(0, 0, 0, 0.95) 35%, rgba(0, 0, 0, 0.25) 100%);
-      -webkit-mask-image: radial-gradient(ellipse 100% 85% at 50% 15%, rgba(0, 0, 0, 0.95) 35%, rgba(0, 0, 0, 0.25) 100%);
+        radial-gradient(rgba(71, 85, 105, 0.18) 1px, transparent 1px),
+        linear-gradient(to right, rgba(148, 163, 184, 0.06) 1px, transparent 1px),
+        linear-gradient(to bottom, rgba(148, 163, 184, 0.06) 1px, transparent 1px);
+      mask-image: radial-gradient(ellipse 100% 90% at 50% 18%, rgba(0, 0, 0, 0.98) 40%, rgba(0, 0, 0, 0.25) 100%);
+      -webkit-mask-image: radial-gradient(ellipse 100% 90% at 50% 18%, rgba(0, 0, 0, 0.98) 40%, rgba(0, 0, 0, 0.25) 100%);
     }
     .dark .bg-page-pattern {
-      background-size: 24px 24px, 96px 96px;
+      background-size: 24px 24px, 96px 96px, 96px 96px;
       background-image:
-        radial-gradient(rgba(255, 255, 255, 0.06) 1px, transparent 1px),
-        linear-gradient(to right, rgba(255, 255, 255, 0.022) 1px, transparent 1px),
-        linear-gradient(to bottom, rgba(255, 255, 255, 0.022) 1px, transparent 1px);
+        radial-gradient(rgba(255, 255, 255, 0.075) 1px, transparent 1px),
+        linear-gradient(to right, rgba(255, 255, 255, 0.028) 1px, transparent 1px),
+        linear-gradient(to bottom, rgba(255, 255, 255, 0.028) 1px, transparent 1px);
     }
 
     /* Top Header Aurora Mesh Gradient Light */
     .aurora-mesh-glow {
       background:
-        radial-gradient(ellipse 55% 50% at 28% 0%, rgba(99, 102, 241, 0.12), transparent 70%),
-        radial-gradient(ellipse 45% 45% at 72% 5%, rgba(45, 212, 191, 0.09), transparent 70%),
-        radial-gradient(ellipse 60% 40% at 50% -10%, rgba(129, 140, 248, 0.10), transparent 75%);
-      filter: blur(28px);
+        radial-gradient(ellipse 58% 55% at 25% 0%, rgba(99, 102, 241, 0.16), transparent 72%),
+        radial-gradient(ellipse 50% 48% at 75% 5%, rgba(45, 212, 191, 0.12), transparent 72%),
+        radial-gradient(ellipse 65% 45% at 50% -8%, rgba(129, 140, 248, 0.14), transparent 78%);
+      filter: blur(32px);
     }
     .dark .aurora-mesh-glow {
       background:
-        radial-gradient(ellipse 55% 55% at 28% -5%, rgba(99, 102, 241, 0.18), transparent 72%),
-        radial-gradient(ellipse 48% 45% at 74% 0%, rgba(45, 212, 191, 0.11), transparent 70%),
-        radial-gradient(ellipse 65% 40% at 50% -10%, rgba(79, 70, 229, 0.15), transparent 75%);
-      filter: blur(36px);
+        radial-gradient(ellipse 60% 60% at 26% -5%, rgba(99, 102, 241, 0.24), transparent 74%),
+        radial-gradient(ellipse 52% 48% at 76% 0%, rgba(45, 212, 191, 0.15), transparent 72%),
+        radial-gradient(ellipse 68% 45% at 50% -10%, rgba(79, 70, 229, 0.20), transparent 78%);
+      filter: blur(40px);
     }
 
     /* Elevated Card Surface Effect */
@@ -153,6 +161,10 @@
     }
     #doc-body.font-serif-mode {
       font-family: 'Noto Serif KR', Georgia, serif;
+    }
+    #doc-body.font-ridi-mode {
+      font-family: 'Ridibatang', 'Noto Serif KR', Georgia, serif;
+      letter-spacing: -0.01em;
     }
     #doc-body.font-sans-mode {
       font-family: 'Pretendard', -apple-system, sans-serif;
@@ -471,8 +483,8 @@
           <span>랜덤 탐색</span>
         </button>
 
-        <!-- Font Family Toggle (Sans / Serif) -->
-        <button id="font-family-btn" onclick="toggleFontFamily()" class="px-2.5 py-1.5 rounded-xl text-xs font-medium text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-white/[0.06] border border-slate-200/80 dark:border-white/[0.07] transition flex items-center gap-1" title="본문 서체 전환 (고딕 / 명조)">
+        <!-- Font Family Toggle (Sans / Serif / Ridibatang) -->
+        <button id="font-family-btn" onclick="toggleFontFamily()" class="px-2.5 py-1.5 rounded-xl text-xs font-medium text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-white/[0.06] border border-slate-200/80 dark:border-white/[0.07] transition flex items-center gap-1" title="본문 서체 전환 (고딕 / 명조 / 리디바탕)">
           <i data-lucide="type" class="w-3.5 h-3.5"></i>
           <span id="font-family-label" class="hidden md:inline">고딕</span>
         </button>
@@ -987,7 +999,9 @@
     let fontSizeIndex = 2; // [15, 16, 17, 19, 21]
     const FONT_SIZES = [15, 16, 17, 19, 21];
     const FONT_LABELS = ['88%', '94%', '100%', '112%', '124%'];
-    let isSerif = false;
+    const FONT_MODES = ['sans', 'serif', 'ridi'];
+    const FONT_MODE_NAMES = { sans: '고딕', serif: '명조', ridi: '리디바탕' };
+    let fontFamilyMode = 'sans';
     let openFolders = new Set();
     let backlinksMap = {}; // docId -> Set of source docIds that link to it
     let bookmarksList = []; // Array of docIds
@@ -995,6 +1009,8 @@
     let isAuthorUnlocked = false; // Author unlock state for restricted paid-media articles
     let calloutQuotesStore = []; // Stores plain text quotes for one-click copy
     let SMART_LINK_INDEX = {}; // Normalized multi-key lookup table for fuzzy/prefix WikiLink resolution
+    let SMART_LINK_INDEX_RAW = {}; // Section-specific lookup for 01_Raw documents
+    let SMART_LINK_INDEX_WIKI = {}; // Section-specific lookup for 02_Wiki documents
     let DOCS_BY_DATE6 = {}; // 6-digit date (e.g., '240701') -> Array of docIds
 
     // Initialize Application
@@ -1110,7 +1126,14 @@
       }
       applyFontSize();
 
-      isSerif = readStorage('archive_font_serif', 'false') === 'true';
+      const savedFontMode = readStorage('archive_font_family', '');
+      if (FONT_MODES.includes(savedFontMode)) {
+        fontFamilyMode = savedFontMode;
+      } else if (readStorage('archive_font_serif', 'false') === 'true') {
+        fontFamilyMode = 'serif';
+      } else {
+        fontFamilyMode = 'sans';
+      }
       applyFontFamily();
 
       // Load Bookmarks & Recent History & Author Unlock State
@@ -1311,20 +1334,23 @@
     }
 
     function toggleFontFamily() {
-      isSerif = !isSerif;
-      writeStorage('archive_font_serif', String(isSerif));
+      const currentIdx = FONT_MODES.indexOf(fontFamilyMode);
+      fontFamilyMode = FONT_MODES[(currentIdx + 1) % FONT_MODES.length];
+      writeStorage('archive_font_family', fontFamilyMode);
+      writeStorage('archive_font_serif', String(fontFamilyMode === 'serif'));
       applyFontFamily();
+      showToast(`본문 서체가 [${FONT_MODE_NAMES[fontFamilyMode]}]체로 변경되었습니다.`);
     }
 
     function applyFontFamily() {
       const bodyEl = document.getElementById('doc-body');
       const labelEl = document.getElementById('font-family-label');
       if (bodyEl) {
-        bodyEl.classList.toggle('font-serif-mode', isSerif);
-        bodyEl.classList.toggle('font-sans-mode', !isSerif);
+        bodyEl.classList.remove('font-sans-mode', 'font-serif-mode', 'font-ridi-mode');
+        bodyEl.classList.add(`font-${fontFamilyMode}-mode`);
       }
       if (labelEl) {
-        labelEl.textContent = isSerif ? '명조' : '고딕';
+        labelEl.textContent = FONT_MODE_NAMES[fontFamilyMode] || '고딕';
       }
     }
 
@@ -1427,15 +1453,22 @@
     // 문서 제목·파일명·날짜·접두어 변형을 모두 매핑하는 스마트 링크 인덱스 구축
     function buildSmartLinkIndex() {
       SMART_LINK_INDEX = {};
+      SMART_LINK_INDEX_RAW = {};
+      SMART_LINK_INDEX_WIKI = {};
       DOCS_BY_DATE6 = {};
       if (!DB || !DB.docs) return;
 
-      const registerKey = (rawKey, docId, overwrite = false) => {
+      const registerKey = (rawKey, docId, section = '', overwrite = false) => {
         if (!rawKey || !docId) return;
         const compact = toCompactKey(rawKey);
         if (!compact) return;
         if (overwrite || !SMART_LINK_INDEX[compact]) {
           SMART_LINK_INDEX[compact] = docId;
+        }
+        if (section === 'raw' && (overwrite || !SMART_LINK_INDEX_RAW[compact])) {
+          SMART_LINK_INDEX_RAW[compact] = docId;
+        } else if (section === 'wiki' && (overwrite || !SMART_LINK_INDEX_WIKI[compact])) {
+          SMART_LINK_INDEX_WIKI[compact] = docId;
         }
       };
 
@@ -1443,14 +1476,14 @@
       const lookup = DB.lookup || DB.link_index || {};
       for (const [k, targetId] of Object.entries(lookup)) {
         if (DB.docs[targetId]) {
-          registerKey(k, targetId, true);
+          registerKey(k, targetId, DB.docs[targetId].section, true);
         }
       }
 
-      // 2차: 전체 문서를 순회하며 다양한 변형 키(Article/Sermon 접두어, 날짜 조합, 괄호 제거 등) 등록
+      // 2차: 전체 문서를 순회하며 다양한 변형 키(Article/Sermon 접두어, 날짜 조합, 경로 조합, 괄호 제거 등) 등록
       const allDocs = Object.entries(DB.docs);
-      // WIKI 문서를 먼저 등록하고 RAW 원문이나 정확한 제목이 필요시 우선되도록 정렬
       for (const [id, doc] of allDocs) {
+        const sec = doc.section || (id.startsWith('01_Raw') ? 'raw' : 'wiki');
         const base = String(doc.basename || id.split('/').pop() || '').replace(/\.md$/i, '');
         const title = String(doc.title || base).trim();
         const date6 = extractDate6(doc.date) || extractDate6(base) || extractDate6(id);
@@ -1473,6 +1506,7 @@
 
         const candidates = [
           id,
+          id.replace(/\.md$/i, ''),
           base,
           title,
           baseNoType,
@@ -1483,6 +1517,17 @@
           baseBeforeParen,
           parenInner
         ];
+
+        // 중간 하위 폴더가 생략된 경로 형태도 매칭되도록 추가 (예: "01_Raw/Sermons/4. 2026 D교회/260911 여호와 이레.md")
+        const pathParts = id.replace(/\.md$/i, '').split('/');
+        if (pathParts.length >= 3) {
+          candidates.push(`${pathParts[0]}/${pathParts[1]}/${base}`);
+          candidates.push(`${pathParts[0]}/${pathParts[1]}/${title}`);
+          if (pathParts.length >= 4) {
+            candidates.push(`${pathParts[0]}/${pathParts[1]}/${pathParts[2]}/${base}`);
+            candidates.push(`${pathParts[0]}/${pathParts[1]}/${pathParts[2]}/${title}`);
+          }
+        }
 
         if (date6) {
           candidates.push(
@@ -1496,15 +1541,16 @@
           );
         }
 
-        candidates.forEach(c => registerKey(c, id));
+        candidates.forEach(c => registerKey(c, id, sec));
       }
     }
 
-    // Build Backlinks Index by scanning [[...]] in all documents
+    // Build Backlinks Index by scanning [[...]] and single-bracket path links in all documents
     function buildBacklinksIndex() {
       backlinksMap = {};
       const docs = DB.docs;
       const wikiLinkRegex = /\[\[([^\]|#]+)(?:[|#][^\]]*)?\]\]/g;
+      const pathBracketRegex = /\[((?:01_Raw|02_Wiki)\/[^\]\n]+)\]/gi;
 
       for (const [sourceId, doc] of Object.entries(docs)) {
         if (!doc.body) continue;
@@ -1517,10 +1563,18 @@
             backlinksMap[targetId].add(sourceId);
           }
         }
+        while ((match = pathBracketRegex.exec(doc.body)) !== null) {
+          const targetRaw = match[1].trim();
+          const targetId = resolveWikiLinkTarget(targetRaw);
+          if (targetId && targetId !== sourceId) {
+            if (!backlinksMap[targetId]) backlinksMap[targetId] = new Set();
+            backlinksMap[targetId].add(sourceId);
+          }
+        }
       }
     }
 
-    // Resolve Obsidian WikiLink target name to actual doc ID
+    // Resolve Obsidian WikiLink or File Path target name to actual doc ID
     function resolveWikiLinkTarget(targetStr) {
       if (!targetStr || !DB || !DB.docs) return null;
 
@@ -1528,6 +1582,7 @@
       let raw = String(targetStr)
         .trim()
         .replace(/^\\+|\\+$/g, '')
+        .replace(/\\/g, '/')
         .split('|')[0]
         .split('#')[0]
         .trim();
@@ -1537,20 +1592,45 @@
       const lower = clean.toLowerCase();
       const norm = lower.replace(/[\s_]+/g, '_');
 
-      // 2. 직접 ID 및 기본 lookup 매칭
+      // 링크에 01_Raw 또는 02_Wiki 섹션 힌트가 있는지 판별
+      const wantsRaw = /^(?:01_raw|raw|sermons?|articles?)\b/i.test(clean) || clean.toLowerCase().includes('01_raw/');
+      const wantsWiki = /^(?:02_wiki|wiki|sources?|synthesis|concepts?|theologians?)\b/i.test(clean) || clean.toLowerCase().includes('02_wiki/');
+
+      // 2. 직접 ID 매칭 및 대소문자 무시 전체 경로 매칭
       if (DB.docs[raw]) return raw;
       if (DB.docs[clean]) return clean;
       if (DB.docs[clean + '.md']) return clean + '.md';
 
+      // 대소문자만 다른 파일 경로일 경우 (예: 01_Raw/Sermons/... vs 01_Raw/sermons/...)
+      if (clean.includes('/')) {
+        const targetFullLower = (clean + '.md').toLowerCase();
+        for (const id of Object.keys(DB.docs)) {
+          if (id.toLowerCase() === targetFullLower || id.replace(/\.md$/i, '').toLowerCase() === lower) {
+            return id;
+          }
+        }
+      }
+
       const lookup = DB.lookup || DB.link_index || {};
-      const directCandidates = [raw, clean, clean + '.md', lower, norm, clean.split('/').pop()];
+      const directCandidates = [raw, clean, clean + '.md', lower, norm];
+      if (!wantsRaw && !wantsWiki) {
+        directCandidates.push(clean.split('/').pop());
+      }
       for (const candidate of directCandidates) {
         if (!candidate) continue;
         const targetId = lookup[candidate] || lookup[candidate.toLowerCase()] || lookup[candidate.toLowerCase().replace(/[\s_]+/g, '_')];
-        if (targetId && DB.docs[targetId]) return targetId;
+        if (targetId && DB.docs[targetId]) {
+          if (wantsRaw && DB.docs[targetId].section !== 'raw' && DB.cross_map?.wiki_to_raw?.[targetId]) {
+            return DB.cross_map.wiki_to_raw[targetId];
+          }
+          if (wantsWiki && DB.docs[targetId].section !== 'wiki' && DB.cross_map?.raw_to_wiki?.[targetId]) {
+            return DB.cross_map.raw_to_wiki[targetId];
+          }
+          return targetId;
+        }
       }
 
-      // 3. 스마트 인덱스 매칭 (Article 240701 ..., Sermon ..., 괄호/특수문자/접두어 제거 버전)
+      // 3. 스마트 인덱스 매칭 (01_Raw/Sermons/... 경로, Article 240701 ..., 괄호/특수문자/접두어 제거 버전)
       const tail = clean.split('/').pop().trim();
       const noType = stripDocTypePrefix(tail);
       const noDate = stripDocDatePrefix(noType);
@@ -1566,22 +1646,30 @@
 
       for (const cand of smartCandidates) {
         const cKey = toCompactKey(cand);
-        if (cKey && SMART_LINK_INDEX[cKey] && DB.docs[SMART_LINK_INDEX[cKey]]) {
-          return SMART_LINK_INDEX[cKey];
+        if (!cKey) continue;
+        if (wantsRaw && SMART_LINK_INDEX_RAW[cKey] && DB.docs[SMART_LINK_INDEX_RAW[cKey]]) {
+          return SMART_LINK_INDEX_RAW[cKey];
+        }
+        if (wantsWiki && SMART_LINK_INDEX_WIKI[cKey] && DB.docs[SMART_LINK_INDEX_WIKI[cKey]]) {
+          return SMART_LINK_INDEX_WIKI[cKey];
+        }
+        if (SMART_LINK_INDEX[cKey] && DB.docs[SMART_LINK_INDEX[cKey]]) {
+          const matchedId = SMART_LINK_INDEX[cKey];
+          if (wantsRaw && DB.docs[matchedId].section !== 'raw' && DB.cross_map?.wiki_to_raw?.[matchedId]) {
+            return DB.cross_map.wiki_to_raw[matchedId];
+          }
+          return matchedId;
         }
       }
 
-      // 4. 6자리 날짜(예: 240701)가 포함된 경우 해당 날짜 문서들과 제목 유사도 비교
-      const date6 = extractDate6(tail);
-      const wantsArticle = /^article/i.test(tail);
-      const wantsSermon = /^sermon/i.test(tail);
+      // 4. 6자리 날짜(예: 260911, 240701)가 포함된 경우 해당 날짜 문서들과 제목 유사도 비교
+      const date6 = extractDate6(tail) || extractDate6(clean);
+      const wantsArticle = /^article/i.test(tail) || clean.toLowerCase().includes('/articles/');
+      const wantsSermon = /^sermon/i.test(tail) || clean.toLowerCase().includes('/sermons/');
       const targetCompactTitle = toCompactKey(noDate);
 
       if (date6 && DOCS_BY_DATE6[date6] && DOCS_BY_DATE6[date6].length > 0) {
         const dateDocs = DOCS_BY_DATE6[date6];
-        if (dateDocs.length === 1 && !targetCompactTitle) {
-          return dateDocs[0];
-        }
         let bestId = null;
         let bestScore = -1;
         for (const candId of dateDocs) {
@@ -1593,6 +1681,8 @@
             if (dCompact === targetCompactTitle) score += 100;
             else if (dCompact.includes(targetCompactTitle) || targetCompactTitle.includes(dCompact)) score += 60;
           }
+          if (wantsRaw && d.section === 'raw') score += 30;
+          if (wantsWiki && d.section === 'wiki') score += 30;
           if (wantsArticle && (d.category === 'articles' || candId.toLowerCase().includes('article'))) score += 15;
           if (wantsSermon && (d.category === 'sermons' || candId.toLowerCase().includes('sermon'))) score += 15;
           if (score > bestScore) {
@@ -1607,7 +1697,7 @@
 
       // 5. 부분 문자열(Substring) 폴백 매칭 (제목이 길거나 일부 조사/부제가 다른 경우)
       const searchCompact = targetCompactTitle || toCompactKey(noType);
-      if (searchCompact && searchCompact.length >= 4) {
+      if (searchCompact && searchCompact.length >= 3) {
         let bestMatchId = null;
         let bestMatchScore = 0;
 
@@ -1615,14 +1705,19 @@
           const docTitleCompact = toCompactKey(stripDocDatePrefix(stripDocTypePrefix(doc.title || doc.basename)));
           if (!docTitleCompact) continue;
 
+          const sectionBonus = (wantsRaw && doc.section === 'raw') || (wantsWiki && doc.section === 'wiki') ? 0.15 : 0;
+
           if (docTitleCompact === searchCompact) {
+            if (wantsRaw && doc.section !== 'raw' && DB.cross_map?.wiki_to_raw?.[id]) {
+              return DB.cross_map.wiki_to_raw[id];
+            }
             return id;
           }
           if (docTitleCompact.includes(searchCompact) || searchCompact.includes(docTitleCompact)) {
             const minLen = Math.min(docTitleCompact.length, searchCompact.length);
             const maxLen = Math.max(docTitleCompact.length, searchCompact.length);
-            const ratio = minLen / maxLen;
-            if (minLen >= 5 && ratio > bestMatchScore) {
+            const ratio = (minLen / maxLen) + sectionBonus;
+            if (minLen >= 4 && ratio > bestMatchScore) {
               bestMatchScore = ratio;
               bestMatchId = id;
             }
@@ -2237,10 +2332,43 @@
       const sidebarFilter = document.getElementById('sidebar-filter-input');
       renderSidebarMenus(sidebarFilter ? sidebarFilter.value : '');
 
-      // 원본 기고문과 연결된 WIKI 분석 문서를 cross_map에서 조회합니다.
-      const counterpartId = (DB.cross_map && DB.cross_map.raw_to_wiki)
+      // 원본 설교/기고문과 연결된 WIKI 분석 문서(또는 역방향)를 cross_map에서 조회합니다.
+      const counterpartId = (DB.cross_map && DB.cross_map.raw_to_wiki && DB.cross_map.raw_to_wiki[docId])
         ? DB.cross_map.raw_to_wiki[docId]
-        : null;
+        : ((DB.cross_map && DB.cross_map.wiki_to_raw && DB.cross_map.wiki_to_raw[docId])
+            ? DB.cross_map.wiki_to_raw[docId]
+            : null);
+
+      // 상단 브레드크럼 및 RAW <-> WIKI 1:1 전환 버튼 렌더링
+      const breadcrumbsEl = document.getElementById('doc-breadcrumbs');
+      if (breadcrumbsEl) {
+        const parts = docId.replace(/\.md$/i, '').split('/');
+        breadcrumbsEl.innerHTML = `
+          <button onclick="navigateHome(event)" class="hover:text-brand-500 transition flex items-center gap-1">
+            <i data-lucide="home" class="w-3.5 h-3.5"></i>
+            <span>홈</span>
+          </button>
+          ${parts.slice(0, -1).map(p => `
+            <span class="text-slate-300 dark:text-slate-600">/</span>
+            <span class="truncate max-w-[160px]">${escapeHtml(p.replace(/_/g, ' '))}</span>
+          `).join('')}
+        `;
+      }
+
+      const counterpartBar = document.getElementById('doc-counterpart-bar');
+      if (counterpartBar) {
+        if (counterpartId && DB.docs[counterpartId]) {
+          const isToWiki = doc.section === 'raw';
+          counterpartBar.innerHTML = `
+            <button onclick="openDoc('${escapeJs(counterpartId)}')" class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold ${isToWiki ? 'bg-brand-600 hover:bg-brand-500 text-white shadow-sm shadow-brand-500/20' : 'bg-amber-500/15 hover:bg-amber-500/25 text-amber-700 dark:text-amber-300 border border-amber-500/30'} transition">
+              <i data-lucide="${isToWiki ? 'Sparkles' : 'BookOpen'}" class="w-3.5 h-3.5"></i>
+              <span>${isToWiki ? 'WIKI 신학 분석 보기' : 'RAW 원본 설교/기고문 보기'}</span>
+            </button>
+          `;
+        } else {
+          counterpartBar.innerHTML = '';
+        }
+      }
 
       // Record in recent history & update bookmark UI
       recordRecentDoc(docId);
@@ -2591,21 +2719,29 @@
         return match;
       });
 
-      // 2-3. Convert single-bracket document references like [Article 240701 신약성경은 예수 그리스도의 십자가를 무엇이라 말하는가]
-      processed = processed.replace(/(?<![!\[])\[([^\]\n]{4,120})\](?!\()/g, (match, inner) => {
+      // 2-3. Convert single-bracket document & file-path references like:
+      // [01_Raw/Sermons/4. 2026 D교회/260911 여호와 이레.md] or [Article 240701 신약성경은 예수 그리스도의 십자가를 무엇이라 말하는가]
+      processed = processed.replace(/(?<![!\[])\[([^\]\n]{3,180})\](?!\()/g, (match, inner) => {
         const trimmed = inner.trim();
         // Skip markdown callouts [!quote], footnotes [^1], or strings containing emphasis asterisks [*안녕*이란 말]
         if (/^[!^]/.test(trimmed) || trimmed.includes('*') || trimmed.includes('@@')) {
           return match;
         }
-        const hasDocPrefix = /^(?:Article|Sermon|Source|Series|Concept|Theologian|Period)\b/i.test(trimmed) || /^\d{6}\s+\S+/.test(trimmed);
+        const isPathLike = /^(?:01_Raw|02_Wiki|Raw|Wiki|Sermons?|Articles?)[\/\\]/i.test(trimmed) || /\.md$/i.test(trimmed);
+        const hasDocPrefix = /^(?:Article|Sermon|Source|Series|Concept|Theologian|Period|Synthesis)\b/i.test(trimmed) || /^\d{6}\s*\S+/.test(trimmed);
         const compact = toCompactKey(trimmed);
         const exactIndexedId = compact ? SMART_LINK_INDEX[compact] : null;
-        const resolvedId = exactIndexedId || (hasDocPrefix ? resolveWikiLinkTarget(trimmed) : null);
+        const resolvedId = (isPathLike || hasDocPrefix)
+          ? resolveWikiLinkTarget(trimmed)
+          : (exactIndexedId || null);
 
         if (resolvedId && DB.docs[resolvedId]) {
+          // 경로형 링크([01_Raw/Sermons/.../260911 여호와 이레.md])일 경우 깔끔한 파일명/제목을 표시하거나 원문 표기를 유지
+          const displayLabel = isPathLike
+            ? trimmed.split('/').pop().replace(/\.md$/i, '').replace(/_/g, ' ')
+            : trimmed;
           const idx = wikiLinkTokens.length;
-          wikiLinkTokens.push(buildWikiLinkHtml(resolvedId, trimmed));
+          wikiLinkTokens.push(buildWikiLinkHtml(resolvedId, displayLabel));
           return `@@WIKILINK_${idx}@@`;
         }
         return match;
