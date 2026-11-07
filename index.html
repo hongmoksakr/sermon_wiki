@@ -85,6 +85,63 @@
         linear-gradient(to bottom, rgba(148, 163, 184, 0.05) 1px, transparent 1px);
     }
 
+    /* Subtle editorial page texture: micro dots + architectural grid */
+    .bg-page-pattern {
+      background-size: 24px 24px, 96px 96px, 96px 96px;
+      background-image:
+        radial-gradient(rgba(100, 116, 139, 0.14) 1px, transparent 1px),
+        linear-gradient(to right, rgba(148, 163, 184, 0.045) 1px, transparent 1px),
+        linear-gradient(to bottom, rgba(148, 163, 184, 0.045) 1px, transparent 1px);
+      mask-image: radial-gradient(ellipse 100% 85% at 50% 15%, rgba(0, 0, 0, 0.95) 35%, rgba(0, 0, 0, 0.25) 100%);
+      -webkit-mask-image: radial-gradient(ellipse 100% 85% at 50% 15%, rgba(0, 0, 0, 0.95) 35%, rgba(0, 0, 0, 0.25) 100%);
+    }
+    .dark .bg-page-pattern {
+      background-size: 24px 24px, 96px 96px, 96px 96px;
+      background-image:
+        radial-gradient(rgba(255, 255, 255, 0.06) 1px, transparent 1px),
+        linear-gradient(to right, rgba(255, 255, 255, 0.022) 1px, transparent 1px),
+        linear-gradient(to bottom, rgba(255, 255, 255, 0.022) 1px, transparent 1px);
+    }
+
+    /* Soft aurora mesh behind the top navigation */
+    .aurora-mesh-glow {
+      background:
+        radial-gradient(ellipse 55% 50% at 28% 0%, rgba(99, 102, 241, 0.12), transparent 70%),
+        radial-gradient(ellipse 45% 45% at 72% 5%, rgba(45, 212, 191, 0.09), transparent 70%),
+        radial-gradient(ellipse 60% 40% at 50% -10%, rgba(129, 140, 248, 0.10), transparent 75%);
+      filter: blur(28px);
+    }
+    .dark .aurora-mesh-glow {
+      background:
+        radial-gradient(ellipse 55% 55% at 28% -5%, rgba(99, 102, 241, 0.18), transparent 72%),
+        radial-gradient(ellipse 48% 45% at 74% 0%, rgba(45, 212, 191, 0.11), transparent 70%),
+        radial-gradient(ellipse 65% 40% at 50% -10%, rgba(79, 70, 229, 0.15), transparent 75%);
+      filter: blur(36px);
+    }
+
+    #doc-body a.doc-internal-link {
+      color: #4f46e5;
+      font-weight: 600;
+      text-decoration: underline;
+      text-decoration-color: rgba(99, 102, 241, 0.38);
+      text-decoration-thickness: 1px;
+      text-underline-offset: 3px;
+      cursor: pointer;
+    }
+    #doc-body a.doc-internal-link:hover {
+      color: #0d9488;
+      text-decoration-color: currentColor;
+    }
+    .dark #doc-body a.doc-internal-link { color: #a5b4fc; }
+    .dark #doc-body a.doc-internal-link:hover { color: #5eead4; }
+    #doc-body a.doc-link-unresolved {
+      color: #b45309;
+      text-decoration: underline dotted;
+      text-underline-offset: 3px;
+      cursor: help;
+    }
+    .dark #doc-body a.doc-link-unresolved { color: #fbbf24; }
+
     /* Document Content Styling */
     #doc-body {
       font-size: var(--doc-font-size);
@@ -294,25 +351,16 @@
       mask-image: linear-gradient(to bottom, rgba(0,0,0,1) 45%, rgba(0,0,0,0) 100%);
       -webkit-mask-image: linear-gradient(to bottom, rgba(0,0,0,1) 45%, rgba(0,0,0,0) 100%);
     }
-
-    /* 아티클 본문 안에 삽입되는 부분 열람 제한 영역 */
-    .article-inline-lock {
-      margin: 2.25rem 0;
-      padding: 1.75rem 1.25rem;
-      border: 1px solid rgba(244, 63, 94, 0.28);
-      border-radius: 1rem;
-      background: linear-gradient(145deg, rgba(244, 63, 94, 0.055), rgba(99, 102, 241, 0.045));
-      text-align: center;
-    }
-    .dark .article-inline-lock {
-      border-color: rgba(251, 113, 133, 0.25);
-      background: linear-gradient(145deg, rgba(244, 63, 94, 0.09), rgba(99, 102, 241, 0.07));
-    }
-    .article-inline-lock p:last-child { margin-bottom: 0; }
   </style>
 </head>
 
-<body class="bg-slate-50 text-slate-800 dark:bg-[#0B0F17] dark:text-slate-200 antialiased selection:bg-brand-500 selection:text-white transition-colors duration-200 overflow-x-hidden">
+<body class="bg-[#F8FAFC] text-slate-800 dark:bg-[#090C12] dark:text-slate-200 antialiased selection:bg-brand-500 selection:text-white transition-colors duration-200 overflow-x-hidden">
+
+  <!-- Ambient Background Layer: Subtle Dot/Grid Pattern & Top Aurora Mesh Light -->
+  <div class="pointer-events-none fixed inset-0 z-0 overflow-hidden" aria-hidden="true">
+    <div class="absolute inset-0 bg-page-pattern"></div>
+    <div class="absolute -top-24 left-1/2 -translate-x-1/2 w-full max-w-[1680px] h-[480px] aurora-mesh-glow"></div>
+  </div>
 
   <!-- Toast Notification -->
   <div id="toast-notification" class="fixed bottom-6 right-6 z-50 hidden transform transition-all duration-300 translate-y-2 opacity-0">
@@ -328,7 +376,7 @@
   </div>
 
   <!-- Top Navigation Header (Mintlify / GitBook Style) -->
-  <header class="sticky top-0 z-40 h-16 w-full backdrop-blur-xl bg-white/80 dark:bg-[#0B0F17]/80 border-b border-slate-200/80 dark:border-slate-800/80 transition-colors">
+  <header class="sticky top-0 z-40 h-16 w-full backdrop-blur-2xl bg-white/75 dark:bg-[#090C12]/75 border-b border-slate-200/75 dark:border-white/[0.07] transition-colors">
     <div class="max-w-[1680px] mx-auto h-full px-4 lg:px-6 flex items-center justify-between gap-3">
       
       <!-- Left: Mobile Menu Button & Brand Logo -->
@@ -417,7 +465,7 @@
   <div id="sidebar-backdrop" onclick="closeMobileSidebar()" class="fixed inset-0 z-40 bg-slate-950/60 backdrop-blur-sm hidden lg:hidden transition-opacity"></div>
 
   <!-- Main 3-Column Layout Container -->
-  <div class="max-w-[1680px] mx-auto flex min-h-[calc(100vh-4rem)] relative">
+  <div class="max-w-[1680px] mx-auto flex min-h-[calc(100vh-4rem)] relative z-10">
 
     <!-- ==========================================
          LEFT SIDEBAR: DUAL SPLIT (TOP: RAW / BOTTOM: WIKI)
@@ -896,6 +944,13 @@
     let recentHistoryList = []; // Array of { id, timestamp }
     let isAuthorUnlocked = false; // Author unlock state for restricted paid-media articles
     let calloutQuotesStore = []; // Stores plain text quotes for one-click copy
+    // 열람 제한 아티클에서 공개할 미리보기 문단 수
+    // 예: 4 = 처음 4개 문단, 7 = 처음 7개 문단
+    const ARTICLE_TEASER_PARAGRAPH_COUNT = 7;
+
+    // 문서 경로/파일명/제목을 통한 내부 링크 검색 인덱스
+    let DOC_LINK_PATH_INDEX = new Map();
+    let DOC_LINK_ALIAS_INDEX = new Map();
 
     // Initialize Application
     document.addEventListener('DOMContentLoaded', () => {
@@ -903,15 +958,12 @@
       
       // Load Data from window.ARCHIVE_DATA (loaded from ./data.js)
       DB = window.ARCHIVE_DATA || window.VAULT_DATA;
-      if (!DB || !DB.docs || typeof DB.docs !== 'object') {
+      if (!DB || !DB.docs) {
         renderDataLoadError();
         return;
       }
 
-      // data.js의 실제 스키마(raw_tree/wiki_tree는 배열이 아닌 객체)를
-      // 화면 렌더러가 사용하는 공통 트리 구조로 변환합니다.
-      normalizeArchiveTrees();
-      ARTICLE_NUMBER_BY_ID = getArticleNumberMap();
+      buildDocumentLinkIndex();
 
       // Initialize Mermaid
       if (window.mermaid) {
@@ -968,62 +1020,33 @@
       if (window.lucide) lucide.createIcons();
     }
 
-    // 저장소 접근이 차단된 file:// 환경에서도 앱 전체가 중단되지 않도록 보호합니다.
-    function readStorage(key, fallback = null, useSession = false) {
-      try {
-        const storage = useSession ? window.sessionStorage : window.localStorage;
-        const value = storage.getItem(key);
-        return value === null ? fallback : value;
-      } catch (error) {
-        return fallback;
-      }
-    }
-
-    function writeStorage(key, value, useSession = false) {
-      try {
-        const storage = useSession ? window.sessionStorage : window.localStorage;
-        storage.setItem(key, value);
-        return true;
-      } catch (error) {
-        return false;
-      }
-    }
-
-    function removeStorage(key, useSession = false) {
-      try {
-        const storage = useSession ? window.sessionStorage : window.localStorage;
-        storage.removeItem(key);
-      } catch (error) {
-        // 저장소를 사용할 수 없는 환경에서는 메모리 상태만 유지합니다.
-      }
-    }
-
     // Preferences (Theme, Font Size, Font Family)
     function initPreferences() {
-      const savedTheme = readStorage('archive_theme', 'dark');
-      document.documentElement.classList.toggle('dark', savedTheme === 'dark');
+      const savedTheme = localStorage.getItem('archive_theme') || 'dark';
+      if (savedTheme === 'dark') {
+        document.documentElement.classList.add('dark');
+      } else {
+        document.documentElement.classList.remove('dark');
+      }
 
-      const savedSizeIdx = parseInt(readStorage('archive_font_idx', ''), 10);
+      const savedSizeIdx = parseInt(localStorage.getItem('archive_font_idx'), 10);
       if (!isNaN(savedSizeIdx) && savedSizeIdx >= 0 && savedSizeIdx < FONT_SIZES.length) {
         fontSizeIndex = savedSizeIdx;
       }
       applyFontSize();
 
-      isSerif = readStorage('archive_font_serif', 'false') === 'true';
+      isSerif = localStorage.getItem('archive_font_serif') === 'true';
       applyFontFamily();
 
       // Load Bookmarks & Recent History & Author Unlock State
       try {
-        const savedBookmarks = JSON.parse(readStorage('archive_bookmarks', '[]'));
-        const savedRecents = JSON.parse(readStorage('archive_recent', '[]'));
-        bookmarksList = Array.isArray(savedBookmarks) ? savedBookmarks : [];
-        recentHistoryList = Array.isArray(savedRecents) ? savedRecents : [];
-      } catch (error) {
+        bookmarksList = JSON.parse(localStorage.getItem('archive_bookmarks') || '[]');
+        recentHistoryList = JSON.parse(localStorage.getItem('archive_recent') || '[]');
+        isAuthorUnlocked = sessionStorage.getItem('archive_author_unlocked') === 'true' || localStorage.getItem('archive_author_unlocked') === 'true';
+      } catch (e) {
         bookmarksList = [];
         recentHistoryList = [];
       }
-      isAuthorUnlocked = readStorage('archive_author_unlocked', 'false', true) === 'true'
-        || readStorage('archive_author_unlocked', 'false') === 'true';
     }
 
     function showToast(msg) {
@@ -1063,117 +1086,10 @@
       document.body.removeChild(ta);
     }
 
-    // ============================================================
-    // 아티클 열람 제한 설정
-    // ============================================================
-    // 아래 번호는 좌측 메뉴 '외부 기고문 (Articles)'에 표시되는 순서입니다.
-    // 최신 글이 1번이며, data.js의 raw_tree.articles 배열 순서를 그대로 사용합니다.
-    // 예: [1, 3, 5] = 1번, 3번, 5번 아티클 전체 열람 제한
-    // 제한하지 않을 아티클은 배열에서 번호를 제거하면 됩니다.
-    const RESTRICTED_ARTICLE_NUMBERS = new Set([
-      // 1,
-      // 3,
-    ]);
-
-    // 번호 대신 문서 ID로 지정하고 싶을 때 사용하는 선택 설정입니다.
-    // RESTRICTED_ARTICLE_NUMBERS와 함께 사용할 수 있습니다.
-    const FULL_RESTRICTED_ARTICLE_IDS = new Set([
-      // '01_Raw/articles/260415 그건 은혜로 하는 겁니다.md'
-    ]);
-
-    // 아티클 번호와 문서 ID의 대응표를 한 번 생성합니다.
-    // data.js의 메뉴 순서와 동일하므로 번호가 바뀌지 않도록 data.js 순서를 기준으로 합니다.
-    function getArticleNumberMap() {
-      const articles = (DB && DB.raw_tree && Array.isArray(DB.raw_tree.articles))
-        ? DB.raw_tree.articles
-        : Object.values(DB.docs)
-            .filter(doc => doc && doc.section === 'raw' && doc.category === 'articles')
-            .sort((a, b) => String(b.date || '').localeCompare(String(a.date || '')) || String(a.id || '').localeCompare(String(b.id || '')));
-      const map = new Map();
-      articles.forEach((article, index) => {
-        const id = typeof article === 'string' ? article : article && article.id;
-        if (id && DB.docs[id]) map.set(id, index + 1);
-      });
-      return map;
-    }
-
-    let ARTICLE_NUMBER_BY_ID = new Map();
-
-    function hasAnyPartialAccessMarker(doc) {
-      const body = String((doc && doc.body) || '');
-      return /<!--\s*ACCESS:LOCKED:(?:START|END)\s*-->/i.test(body);
-    }
-
-    function isPartialRestrictedArticle(doc) {
-      return !!doc && doc.section === 'raw' && doc.category === 'articles'
-        && hasAnyPartialAccessMarker(doc);
-    }
-
-    // 표식이 있거나 전체 제한 목록에 등록된 아티클만 잠금 대상으로 판정합니다.
-    // 표식이 없는 일반 아티클은 전체 공개됩니다.
+    // Check if document is a restricted paid-media article
     function isRestrictedArticle(doc) {
-      if (!doc || doc.section !== 'raw' || doc.category !== 'articles') return false;
-      const articleNumber = ARTICLE_NUMBER_BY_ID.get(doc.id);
-      return isPartialRestrictedArticle(doc)
-        || FULL_RESTRICTED_ARTICLE_IDS.has(doc.id)
-        || (articleNumber != null && RESTRICTED_ARTICLE_NUMBERS.has(articleNumber));
-    }
-
-    // 본문을 공개 구간과 잠금 구간으로 나누어 렌더링합니다.
-    // START/END 표식이 짝이 맞지 않거나 중첩된 경우에는 본문을 노출하지 않습니다.
-    function renderPartialAccessBody(doc) {
-      const source = String((doc && doc.body) || '');
-      const startTag = /<!--\s*ACCESS:LOCKED:START\s*-->/gi;
-      const endTag = /<!--\s*ACCESS:LOCKED:END\s*-->/gi;
-      const startCount = (source.match(startTag) || []).length;
-      const endCount = (source.match(endTag) || []).length;
-      const pairPattern = /<!--\s*ACCESS:LOCKED:START\s*-->([\s\S]*?)<!--\s*ACCESS:LOCKED:END\s*-->/gi;
-      const matches = [...source.matchAll(pairPattern)];
-
-      if (startCount === 0 || startCount !== endCount || matches.length !== startCount) {
-        return `
-          <div class="article-inline-lock">
-            <div class="text-2xl mb-2">⚠️</div>
-            <h3 class="font-bold text-slate-900 dark:text-white mb-2">열람 제한 구간 설정을 확인해 주세요</h3>
-            <p class="text-sm text-slate-600 dark:text-slate-300">이 문서의 잠금 표식이 올바른 쌍으로 구성되어 있지 않아 본문을 안전하게 표시하지 않았습니다.</p>
-          </div>`;
-      }
-
-      let html = '';
-      let cursor = 0;
-      let sectionNumber = 0;
-
-      for (const match of matches) {
-        const publicPart = source.slice(cursor, match.index);
-        if (publicPart.trim()) html += parseObsidianMarkdown(publicPart);
-
-        const lockedPart = String(match[1] || '').trim();
-        sectionNumber += 1;
-
-        if (isAuthorUnlocked) {
-          // 저자 인증 상태에서는 제한 본문도 그대로 표시합니다.
-          html += parseObsidianMarkdown(lockedPart);
-        } else {
-          // 방문자에게는 제한 본문을 DOM에 넣지 않고 안내 패널만 표시합니다.
-          html += `
-            <section class="article-inline-lock" aria-label="열람 제한 구간">
-              <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-bold bg-rose-500/10 text-rose-600 dark:text-rose-400 border border-rose-500/20 mb-3">
-                <span>🔒 열람 제한</span><span>·</span><span>일부 본문 비공개</span>
-              </div>
-              <h3 class="text-base sm:text-lg font-extrabold text-slate-900 dark:text-white mb-2">제한된 본문 구간 ${sectionNumber}</h3>
-              <p class="text-sm text-slate-600 dark:text-slate-300 mb-4">이 부분은 저자 인증 후 열람할 수 있습니다. 아래 버튼을 눌러 원문 열람 권한을 인증해 주세요.</p>
-              <button type="button" onclick="openAuthorUnlockModal()" class="inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl text-xs font-bold bg-brand-600 hover:bg-brand-500 text-white transition">
-                <i data-lucide="key-round" class="w-4 h-4"></i><span>저자 전용 원문 잠금 해제</span>
-              </button>
-            </section>`;
-        }
-
-        cursor = match.index + match[0].length;
-      }
-
-      const trailingPublicPart = source.slice(cursor);
-      if (trailingPublicPart.trim()) html += parseObsidianMarkdown(trailingPublicPart);
-      return html;
+      if (!doc) return false;
+      return doc.section === 'raw' && doc.category === 'articles';
     }
 
     // Estimate reading time & character count
@@ -1190,7 +1106,7 @@
 
     function toggleTheme() {
       const isDark = document.documentElement.classList.toggle('dark');
-      writeStorage('archive_theme', isDark ? 'dark' : 'light');
+      localStorage.setItem('archive_theme', isDark ? 'dark' : 'light');
       if (window.mermaid) {
         mermaid.initialize({ startOnLoad: false, theme: isDark ? 'dark' : 'default' });
         if (currentDocId) renderMermaidDiagrams();
@@ -1199,7 +1115,7 @@
 
     function changeFontSize(delta) {
       fontSizeIndex = Math.max(0, Math.min(FONT_SIZES.length - 1, fontSizeIndex + delta));
-      writeStorage('archive_font_idx', String(fontSizeIndex));
+      localStorage.setItem('archive_font_idx', fontSizeIndex);
       applyFontSize();
     }
 
@@ -1211,7 +1127,7 @@
 
     function toggleFontFamily() {
       isSerif = !isSerif;
-      writeStorage('archive_font_serif', String(isSerif));
+      localStorage.setItem('archive_font_serif', isSerif);
       applyFontFamily();
     }
 
@@ -1225,70 +1141,6 @@
       if (labelEl) {
         labelEl.textContent = isSerif ? '명조' : '고딕';
       }
-    }
-
-    // 실제 ARCHIVE_DATA의 폴더 트리를 사이드바가 요구하는 공통 형식으로 변환합니다.
-    function normalizeArchiveTrees() {
-      const toDocNode = (item) => {
-        if (!item || !item.id || !DB.docs[item.id]) return null;
-        const doc = DB.docs[item.id];
-        return {
-          type: 'doc',
-          id: item.id,
-          title: item.title || doc.title || doc.basename || item.id,
-          date: item.date || doc.date || ''
-        };
-      };
-
-      const makeFolder = (name, children) => ({
-        type: 'folder',
-        name: name || '기타',
-        children: (children || []).filter(Boolean)
-      });
-
-      const rawSource = DB.raw_tree || {};
-      const rawMenu = [];
-
-      (rawSource.sermons || []).forEach((period) => {
-        const children = [];
-        (period.root_docs || []).forEach((item) => {
-          const node = toDocNode(item);
-          if (node) children.push(node);
-        });
-        (period.subfolders || []).forEach((subfolder) => {
-          const docs = (subfolder.docs || []).map(toDocNode).filter(Boolean);
-          children.push(makeFolder(subfolder.folder_name || subfolder.folder || subfolder.folder_id, docs));
-        });
-        rawMenu.push(makeFolder(period.period_name || period.period_id, children));
-      });
-
-      const articleNodes = (rawSource.articles || []).map(toDocNode).filter(Boolean);
-      if (articleNodes.length) rawMenu.push(makeFolder('외부 기고문 (Articles)', articleNodes));
-
-      const wikiSource = DB.wiki_tree || {};
-      const wikiMenu = [
-        makeFolder('종합 보고서 (Synthesis)', (wikiSource.synthesis || []).map(toDocNode)),
-        makeFolder('강해 시리즈 (Series)', (wikiSource.series || []).map(toDocNode)),
-        makeFolder('신학자 노트 (Theologians)', (wikiSource.theologians || []).map(toDocNode)),
-        makeFolder('신학 개념 (Concepts)', (wikiSource.concepts || []).map(toDocNode))
-      ];
-
-      (wikiSource.sources_by_period || []).forEach((period) => {
-        wikiMenu.push(makeFolder(
-          period.period_name || period.period_id || '개별 분석 자료',
-          (period.docs || []).map(toDocNode)
-        ));
-      });
-
-      if ((wikiSource.meta_docs || []).length) {
-        wikiMenu.push(makeFolder('아카이브 관리 문서', (wikiSource.meta_docs || []).map(toDocNode)));
-      }
-
-      DB.raw_menu_tree = rawMenu;
-      DB.wiki_menu_tree = wikiMenu;
-
-      // 새 데이터 번들은 link_index 대신 lookup을 사용하므로 호환 별칭을 둡니다.
-      if (!DB.link_index && DB.lookup) DB.link_index = DB.lookup;
     }
 
     // Build Backlinks Index by scanning [[...]] in all documents
@@ -1311,75 +1163,218 @@
       }
     }
 
-    // Resolve Obsidian WikiLink target name to actual doc ID
-    function normalizeLinkKey(value) {
-      return String(value || '')
-        .normalize('NFC')
-        .replace(/\\/g, '/')
-        .replace(/\.md$/i, '')
-        .replace(/^\.\//, '')
-        .replace(/^\/+|\/+$/g, '')
-        .replace(/[\s_]+/g, ' ')
-        .replace(/[“”‘’"'`]/g, '')
-        .replace(/[()[\]{}.,:;!?·—–-]/g, '')
-        .trim()
-        .toLocaleLowerCase('ko-KR');
+    // Decode URI/path values defensively (file:/// paths often contain multiple encoded segments).
+    function decodeDocumentReference(value) {
+      let result = String(value || '').trim();
+      for (let i = 0; i < 2; i++) {
+        try {
+          const decoded = decodeURIComponent(result);
+          if (decoded === result) break;
+          result = decoded;
+        } catch (e) {
+          break;
+        }
+      }
+      return result.replace(/^<|>$/g, '').replace(/\\/g, '/').trim();
     }
 
-    // Obsidian 링크, Markdown 파일 링크, 제목/파일명/경로를 모두 실제 문서 ID로 연결합니다.
+    function cleanDocumentReference(value) {
+      let result = decodeDocumentReference(value);
+      result = result.replace(/^file:\/+/i, '');
+      result = result.replace(/[?#].*$/, '');
+      result = result.replace(/^\.\//, '').replace(/^\/+/, '');
+
+      // Remove the local Obsidian vault's machine-specific prefix, if present.
+      const vaultMatch = result.match(/(?:^|\/)LLM_Wiki\/(.+)$/i);
+      if (vaultMatch) result = vaultMatch[1];
+      return result;
+    }
+
+    function normalizeDocumentKey(value) {
+      return cleanDocumentReference(value)
+        .replace(/\.md$/i, '')
+        .replace(/[_\s]+/g, ' ')
+        .replace(/\/{2,}/g, '/')
+        .normalize('NFC')
+        .toLocaleLowerCase('ko-KR')
+        .trim();
+    }
+
+    function addDocumentIndexEntry(index, key, docId) {
+      const normalized = normalizeDocumentKey(key);
+      if (!normalized || !docId) return;
+      if (!index.has(normalized)) index.set(normalized, new Set());
+      index.get(normalized).add(docId);
+    }
+
+    function getUniqueDocumentMatch(index, key) {
+      const normalized = normalizeDocumentKey(key);
+      const matches = normalized && index.get(normalized);
+      return matches && matches.size === 1 ? Array.from(matches)[0] : null;
+    }
+
+    function buildDocumentLinkIndex() {
+      DOC_LINK_PATH_INDEX = new Map();
+      DOC_LINK_ALIAS_INDEX = new Map();
+
+      for (const [docId, doc] of Object.entries(DB.docs || {})) {
+        addDocumentIndexEntry(DOC_LINK_PATH_INDEX, docId, docId);
+        addDocumentIndexEntry(DOC_LINK_PATH_INDEX, doc.path, docId);
+        addDocumentIndexEntry(DOC_LINK_ALIAS_INDEX, doc.basename, docId);
+        addDocumentIndexEntry(DOC_LINK_ALIAS_INDEX, doc.title, docId);
+        addDocumentIndexEntry(DOC_LINK_ALIAS_INDEX, doc.meta && doc.meta.title, docId);
+
+        const aliases = []
+          .concat(Array.isArray(doc.aliases) ? doc.aliases : [])
+          .concat(Array.isArray(doc.meta && doc.meta.aliases) ? doc.meta.aliases : [])
+          .concat(doc.alias ? [doc.alias] : []);
+        aliases.forEach(alias => addDocumentIndexEntry(DOC_LINK_ALIAS_INDEX, alias, docId));
+      }
+
+      // The generator's `lookup` table maps date-like aliases to canonical document paths.
+      for (const [alias, path] of Object.entries(DB.lookup || {})) {
+        const targetId = getUniqueDocumentMatch(DOC_LINK_PATH_INDEX, path);
+        if (targetId) addDocumentIndexEntry(DOC_LINK_ALIAS_INDEX, alias, targetId);
+      }
+
+      // Support older/newer data bundles that expose a dedicated link_index.
+      for (const [alias, target] of Object.entries(DB.link_index || {})) {
+        const targetId = DB.docs[target] ? target : getUniqueDocumentMatch(DOC_LINK_PATH_INDEX, target) || getUniqueDocumentMatch(DOC_LINK_ALIAS_INDEX, target);
+        if (targetId) addDocumentIndexEntry(DOC_LINK_ALIAS_INDEX, alias, targetId);
+      }
+    }
+
+    // Resolve Obsidian WikiLinks, Markdown links, vault paths, basenames, titles and lookup aliases.
     function resolveWikiLinkTarget(targetStr) {
       if (!targetStr || !DB || !DB.docs) return null;
 
-      let raw = String(targetStr).trim();
-      try { raw = decodeURIComponent(raw); } catch (error) {}
-      raw = raw.replace(/^<|>$/g, '').trim();
-      const clean = raw.replace(/\.md$/i, '');
-      const lookup = DB.lookup || DB.link_index || {};
+      const original = decodeDocumentReference(targetStr);
+      const clean = cleanDocumentReference(original);
+      const leaf = clean.split('/').pop() || clean;
+      const withoutExtension = clean.replace(/\.md$/i, '');
+      const leafWithoutExtension = leaf.replace(/\.md$/i, '');
+      const candidates = [original, clean, withoutExtension, leaf, leafWithoutExtension];
 
-      // 먼저 원본 키와 경로를 그대로 조회합니다.
-      const candidates = [raw, clean, clean + '.md', raw.replace(/\\/g, '/')];
+      // Exact IDs / paths always take priority over potentially ambiguous titles.
       for (const candidate of candidates) {
         if (DB.docs[candidate]) return candidate;
-        const found = lookup[candidate];
-        if (found && DB.docs[found]) return found;
+        const pathMatch = getUniqueDocumentMatch(DOC_LINK_PATH_INDEX, candidate);
+        if (pathMatch) return pathMatch;
       }
 
-      // 대소문자, 공백/밑줄, 확장자, 문장부호 차이를 제거한 키로 조회합니다.
-      const wanted = normalizeLinkKey(clean);
-      if (!wanted) return null;
-
-      for (const [id, doc] of Object.entries(DB.docs)) {
-        const keys = [
-          id,
-          doc.path,
-          doc.basename,
-          doc.title,
-          doc.meta && doc.meta.title
-        ];
-        if (keys.some(key => normalizeLinkKey(key) === wanted)) return id;
+      // Date-code links such as [[240701]] can be resolved through the generated lookup table.
+      const dateCodes = original.match(/\b\d{6}\b/g) || [];
+      for (const code of dateCodes) {
+        const lookupTarget = DB.lookup && DB.lookup[code];
+        if (lookupTarget) {
+          const lookupMatch = getUniqueDocumentMatch(DOC_LINK_PATH_INDEX, lookupTarget);
+          if (lookupMatch) return lookupMatch;
+        }
       }
 
-      // 링크가 폴더 경로를 포함하거나 제목만 포함한 경우를 위한 basename/title 비교
-      const wantedLeaf = normalizeLinkKey(clean.split('/').pop());
-      for (const [id, doc] of Object.entries(DB.docs)) {
-        if (normalizeLinkKey(doc.basename) === wantedLeaf ||
-            normalizeLinkKey(doc.title) === wantedLeaf ||
-            normalizeLinkKey(id.split('/').pop()) === wantedLeaf) return id;
+      for (const candidate of candidates) {
+        const aliasMatch = getUniqueDocumentMatch(DOC_LINK_ALIAS_INDEX, candidate);
+        if (aliasMatch) return aliasMatch;
       }
 
-      // 데이터 번들의 lookup 키도 정규화해 마지막으로 확인합니다.
-      for (const [key, id] of Object.entries(lookup)) {
-        if (normalizeLinkKey(key) === wanted && DB.docs[id]) return id;
+      // Sometimes a visible label prefixes a title with its archive type (e.g. "Article …").
+      const withoutTypePrefix = clean.replace(/^(?:article|sermon|wiki|note)\s+/i, '').replace(/^\d{6}\s+/, '');
+      if (withoutTypePrefix && withoutTypePrefix !== clean) {
+        const prefixedMatch = getUniqueDocumentMatch(DOC_LINK_ALIAS_INDEX, withoutTypePrefix);
+        if (prefixedMatch) return prefixedMatch;
+        const dateCode = (withoutTypePrefix.match(/\b\d{6}\b/) || [])[0];
+        const lookupTarget = dateCode && DB.lookup && DB.lookup[dateCode];
+        if (lookupTarget) {
+          const lookupMatch = getUniqueDocumentMatch(DOC_LINK_PATH_INDEX, lookupTarget);
+          if (lookupMatch) return lookupMatch;
+        }
       }
+
       return null;
+    }
+
+    function resolveMarkdownDocumentHref(href) {
+      const value = String(href || '').trim();
+      if (!value || value.startsWith('#') || /^(?:https?:|mailto:|tel:|data:|javascript:)/i.test(value)) return null;
+
+      const decoded = decodeDocumentReference(value);
+      const looksLikeVaultDocument = /^file:/i.test(value)
+        || /\.md(?:$|[?#])/i.test(decoded)
+        || /(?:^|\/)LLM_Wiki\//i.test(decoded)
+        || /(?:^|\/)(?:01_Raw|02_Wiki)\//i.test(decoded);
+      return looksLikeVaultDocument ? resolveWikiLinkTarget(decoded) : null;
+    }
+
+    function rewriteMarkdownDocumentLinks(html) {
+      const template = document.createElement('template');
+      template.innerHTML = html;
+
+      template.content.querySelectorAll('a[href]').forEach(anchor => {
+        const originalHref = anchor.getAttribute('href') || '';
+        const targetId = resolveMarkdownDocumentHref(originalHref);
+
+        if (targetId) {
+          anchor.setAttribute('href', `#${encodeURIComponent(targetId)}`);
+          anchor.setAttribute('data-wikilink', targetId);
+          anchor.setAttribute('data-doc-link', 'true');
+          anchor.setAttribute('onclick', `openDoc('${escapeJs(targetId)}'); return false;`);
+          anchor.classList.add('doc-internal-link');
+          return;
+        }
+
+        // Local Markdown paths that are absent from data.js should not navigate to a dead file:/// URL.
+        const decodedHref = decodeDocumentReference(originalHref);
+        const isLocalMarkdown = /^file:/i.test(originalHref) || /\.md(?:$|[?#])/i.test(decodedHref);
+        if (isLocalMarkdown) {
+          const label = (anchor.textContent || '').trim();
+          anchor.setAttribute('href', '#');
+          anchor.setAttribute('title', '연결 대상 문서가 현재 data.js에 포함되어 있지 않습니다.');
+          anchor.classList.add('doc-link-unresolved');
+          anchor.setAttribute('onclick', "event.preventDefault(); showToast('연결 대상 문서가 data.js에 없습니다.'); return false;");
+          if (label) anchor.setAttribute('aria-label', `${label} (문서 데이터 누락)`);
+        }
+      });
+
+      return template.innerHTML;
+    }
+
+    // Convert a bare [**document title**] reference into an app link when a matching document exists.
+    function convertBareBracketDocumentLinks(markdown) {
+      return markdown.replace(/\[([^\]\n]+)\](?!\s*(?:\(|\[))/g, (match, label, offset, source) => {
+        const plainLabel = label.replace(/<[^>]*>/g, '').replace(/\*{1,2}|`/g, '').trim();
+        const referenceText = plainLabel.replace(/\s+/g, ' ');
+        const escapedReference = referenceText.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+        const referenceDefinition = new RegExp(`^\\s*\\[${escapedReference}\\]\\s*:`, 'im');
+        if (referenceDefinition.test(source)) return match;
+        const targetId = resolveWikiLinkTarget(plainLabel);
+        if (!targetId) return match;
+        return `<a href="#${encodeURIComponent(targetId)}" data-wikilink="${escapeAttr(targetId)}" data-doc-link="true" onclick="openDoc('${escapeJs(targetId)}'); return false;">${label}</a>`;
+      });
+    }
+
+    // Preserve ordinary square brackets around italic Markdown while still parsing the emphasis inside.
+    function preserveBracketedItalicText(markdown) {
+      return markdown.replace(/\[([^\]\n]*?(?<!\*)\*(?!\*)[^*\n]+(?<!\*)\*(?!\*)[^\]\n]*)\](?!\s*(?:\(|\[))/g, (match, inner, offset, source) => {
+        const referenceLabels = [
+          inner.trim().replace(/\s+/g, ' '),
+          inner.replace(/(?<!\*)\*(?!\*)/g, '').trim().replace(/\s+/g, ' ')
+        ];
+        const hasReferenceDefinition = referenceLabels.some(referenceLabel => {
+          const escapedReferenceLabel = referenceLabel.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+          const definitionPattern = new RegExp(`^\\s*\\[${escapedReferenceLabel}\\]\\s*:`, 'im');
+          return definitionPattern.test(source);
+        });
+        if (hasReferenceDefinition) return match;
+        return `&#91;${inner}&#93;`;
+      });
     }
 
     // Set initial open folders in the sidebar
     function initDefaultOpenFolders() {
-      if (DB.raw_menu_tree && DB.raw_menu_tree.length > 0) {
+      if (DB.raw_tree && DB.raw_tree.length > 0) {
         openFolders.add('raw_0'); // Open Sermons
       }
-      if (DB.wiki_menu_tree && DB.wiki_menu_tree.length > 0) {
+      if (DB.wiki_tree && DB.wiki_tree.length > 0) {
         openFolders.add('wiki_0'); // Open Synthesis
         openFolders.add('wiki_1'); // Open Series
       }
@@ -1398,11 +1393,11 @@
 
       // Render RAW Tree
       const rawContainer = document.getElementById('raw-menu-container');
-      rawContainer.innerHTML = renderTreeNodes(DB.raw_menu_tree || [], 'raw', query);
+      rawContainer.innerHTML = renderTreeNodes(DB.raw_tree || [], 'raw', query);
 
       // Render WIKI Tree
       const wikiContainer = document.getElementById('wiki-menu-container');
-      wikiContainer.innerHTML = renderTreeNodes(DB.wiki_menu_tree || [], 'wiki', query);
+      wikiContainer.innerHTML = renderTreeNodes(DB.wiki_tree || [], 'wiki', query);
 
       if (window.lucide) lucide.createIcons();
     }
@@ -1531,8 +1526,8 @@
         }
         return false;
       }
-      searchTree(DB.raw_menu_tree || [], 'raw');
-      searchTree(DB.wiki_menu_tree || [], 'wiki');
+      searchTree(DB.raw_tree || [], 'raw');
+      searchTree(DB.wiki_tree || [], 'wiki');
     }
 
     // Render Home Dashboard View
@@ -1748,13 +1743,13 @@
       recentHistoryList = recentHistoryList.filter(item => item.id !== docId);
       recentHistoryList.unshift({ id: docId, timestamp: Date.now() });
       if (recentHistoryList.length > 25) recentHistoryList = recentHistoryList.slice(0, 25);
-      writeStorage('archive_recent', JSON.stringify(recentHistoryList));
+      localStorage.setItem('archive_recent', JSON.stringify(recentHistoryList));
       renderHomeBookmarksAndRecent();
     }
 
     function clearRecentHistory() {
       recentHistoryList = [];
-      writeStorage('archive_recent', '[]');
+      localStorage.setItem('archive_recent', '[]');
       renderHomeBookmarksAndRecent();
       if (!document.getElementById('library-modal').classList.contains('hidden')) {
         renderLibraryModalContent();
@@ -1777,7 +1772,7 @@
         bookmarksList.unshift(docId);
         showToast('⭐ 내 북마크 보관함에 저장되었습니다.');
       }
-      writeStorage('archive_bookmarks', JSON.stringify(bookmarksList));
+      localStorage.setItem('archive_bookmarks', JSON.stringify(bookmarksList));
       updateBookmarkBadges();
       renderHomeBookmarksAndRecent();
       if (!document.getElementById('library-modal').classList.contains('hidden')) {
@@ -1906,8 +1901,7 @@
 
     // Navigation & Routing
     function handleHashChange() {
-      let hash = window.location.hash.slice(1);
-      try { hash = decodeURIComponent(hash); } catch (error) { /* 잘못된 퍼센트 인코딩은 원문 hash로 처리 */ }
+      const hash = decodeURIComponent(window.location.hash.slice(1));
       if (!hash || hash === 'home') {
         showHomeView();
       } else {
@@ -1961,16 +1955,6 @@
       if (!doc) return;
       currentDocId = docId;
       calloutQuotesStore = [];
-
-      // 현재 문서가 속한 폴더를 펼치고 활성 문서 표시를 즉시 갱신합니다.
-      expandParentsForDoc(docId);
-      const sidebarFilter = document.getElementById('sidebar-filter-input');
-      renderSidebarMenus(sidebarFilter ? sidebarFilter.value : '');
-
-      // 원본 기고문과 연결된 WIKI 분석 문서를 cross_map에서 조회합니다.
-      const counterpartId = (DB.cross_map && DB.cross_map.raw_to_wiki)
-        ? DB.cross_map.raw_to_wiki[docId]
-        : null;
 
       // Record in recent history & update bookmark UI
       recordRecentDoc(docId);
@@ -2059,20 +2043,14 @@
       const bodyEl = document.getElementById('doc-body');
       const paywallCurtainEl = document.getElementById('doc-paywall-curtain');
 
-      if (isPartialRestrictedArticle(doc)) {
-        // 아티클 본문 안의 START/END 표식 구간만 제한하고, 그 앞뒤 문단은 공개합니다.
-        bodyEl.innerHTML = renderPartialAccessBody(doc);
-        paywallCurtainEl.classList.add('hidden');
-        paywallCurtainEl.innerHTML = '';
-      } else if (isRestricted && !isAuthorUnlocked) {
-        // 전체 제한 목록에 등록된 아티클만 기존 티저 + 전체 잠금 커튼을 사용합니다.
+      if (isRestricted && !isAuthorUnlocked) {
+        // Show only Teaser (~first 650 chars or 3 paragraphs) + Blur Fadeout Curtain
         const fullMd = doc.body || '';
         const paragraphs = fullMd.split(/\n\s*\n/);
-        const teaserMd = paragraphs.slice(0, Math.min(4, paragraphs.length)).join('\n\n');
+        const teaserMd = paragraphs.slice(0, Math.min(ARTICLE_TEASER_PARAGRAPH_COUNT, paragraphs.length)).join('\n\n');
         bodyEl.innerHTML = `<div class="article-teaser-mask pb-10 select-none">${parseObsidianMarkdown(teaserMd)}</div>`;
         renderPaywallCurtain(doc, counterpartId);
       } else {
-        // 제한 대상이 아닌 문서는 전체 공개합니다.
         bodyEl.innerHTML = parseObsidianMarkdown(doc.body || '');
         paywallCurtainEl.classList.add('hidden');
         paywallCurtainEl.innerHTML = '';
@@ -2158,7 +2136,7 @@
       const validCodes = ['0414', 'author', 'hdw', '홍동우', '2026'];
       if (validCodes.includes(val)) {
         isAuthorUnlocked = true;
-        writeStorage('archive_author_unlocked', 'true', true);
+        sessionStorage.setItem('archive_author_unlocked', 'true');
         closeAuthorUnlockModal();
         showToast('🔓 저자 인증이 완료되어 전체 기고문 원문이 해제되었습니다.');
         if (currentDocId) renderDocument(currentDocId);
@@ -2170,8 +2148,8 @@
 
     function lockAuthorMode() {
       isAuthorUnlocked = false;
-      removeStorage('archive_author_unlocked', true);
-      removeStorage('archive_author_unlocked');
+      sessionStorage.removeItem('archive_author_unlocked');
+      localStorage.removeItem('archive_author_unlocked');
       showToast('🔒 유료 매체 저작권 보호 모드가 다시 활성화되었습니다.');
       if (currentDocId) renderDocument(currentDocId);
       renderSidebarMenus(document.getElementById('sidebar-filter-input').value);
@@ -2263,70 +2241,41 @@
 
     // Markdown + Obsidian Syntax Parser
     function parseObsidianMarkdown(mdText) {
-      if (mdText == null || mdText === '') return '';
+      if (!mdText) return '';
 
-      // 코드 블록은 Markdown/WikiLink 치환 대상에서 제외합니다.
+      // 1. Extract code blocks temporarily so we don't parse wikilinks inside code/mermaid
       const codeBlocks = [];
-      const wikiLinks = [];
-      let processed = String(mdText).replace(/\r\n?/g, '\n');
-
-      processed = processed.replace(/```([^\n`]*)\n([\s\S]*?)```/g, (match, langText, code) => {
-        const lang = String(langText || '').trim().split(/\s+/)[0].toLowerCase();
+      let processed = mdText.replace(/```(\w*)\n([\s\S]*?)```/g, (match, lang, code) => {
         const idx = codeBlocks.length;
-        if (lang === 'mermaid') {
+        if (lang.toLowerCase() === 'mermaid') {
           codeBlocks.push(`<div class="mermaid my-6 p-4 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 flex justify-center overflow-x-auto">${escapeHtml(code)}</div>`);
         } else {
-          const languageClass = lang ? ` class="language-${escapeAttr(lang)}"` : '';
-          codeBlocks.push(`<pre><code${languageClass}>${escapeHtml(code)}</code></pre>`);
+          codeBlocks.push(`<pre><code class="language-${escapeAttr(lang)}">${escapeHtml(code)}</code></pre>`);
         }
         return `@@CODEBLOCK_${idx}@@`;
       });
 
-      // 데이터 원문에서 \*강조\*로 저장된 표현도 굵은 글씨로 복원합니다.
-      // 코드 블록은 이미 placeholder로 보호되어 있습니다.
-      processed = processed.replace(/\\\*([^*\n]+?)\\\*/g, '**$1**');
+      // 2. Preserve bracketed emphasis and resolve bare document-title references.
+      processed = preserveBracketedItalicText(processed);
+      processed = convertBareBracketDocumentLinks(processed);
 
-      // [[문서명|표시명]] / [[문서명#절]] 문법은 HTML 대신 placeholder로 보존합니다.
+      // 3. Convert Obsidian WikiLinks: [[Target|Alias]] or [[Target]]
       processed = processed.replace(/\[\[([^\]|#]+)(?:#[^\]|]*)?(?:\\?\|([^\]]+))?\]\]/g, (match, target, alias) => {
-        const cleanTarget = String(target || '').replace(/\\$/g, '').trim();
+        const cleanTarget = target.replace(/\\$/g, '').trim();
         const display = (alias ? alias.trim() : cleanTarget.split('/').pop().replace(/_/g, ' '));
         const resolvedId = resolveWikiLinkTarget(cleanTarget);
-        const idx = wikiLinks.length;
         if (resolvedId) {
-          wikiLinks.push(`<a href="#${encodeURIComponent(resolvedId)}" data-wikilink="${escapeAttr(resolvedId)}" onclick="openDoc(decodeURIComponent('${encodeURIComponent(resolvedId)}')); return false;" class="wikilink"><i data-lucide="file-text" class="w-3 h-3 shrink-0"></i><span>${escapeHtml(display)}</span></a>`);
+          return `<a href="#${encodeURIComponent(resolvedId)}" data-wikilink="${escapeAttr(resolvedId)}" onclick="openDoc('${escapeJs(resolvedId)}'); return false;" class="wikilink"><i data-lucide="file-text" class="w-3 h-3 shrink-0"></i><span>${escapeHtml(display)}</span></a>`;
         } else {
-          wikiLinks.push(`<span class="wikilink wikilink-unresolved" title="연결 대상 문서를 데이터에서 찾을 수 없습니다: ${escapeAttr(cleanTarget)}">${escapeHtml(display)}</span>`);
-        }
-        return `@@WIKILINK_${idx}@@`;
-      });
-
-      let html = window.marked && typeof window.marked.parse === 'function'
-        ? window.marked.parse(processed, { gfm: true, breaks: false })
-        : `<pre class="whitespace-pre-wrap text-sm">${escapeHtml(processed)}</pre>`;
-
-      // Marked가 만든 일반 Markdown 링크 중 .md 경로를 아카이브 내부 문서로 연결합니다.
-      const wrapper = document.createElement('div');
-      wrapper.innerHTML = html;
-      wrapper.querySelectorAll('a[href]').forEach(anchor => {
-        const href = anchor.getAttribute('href') || '';
-        if (/^(https?:|mailto:|tel:|#)/i.test(href)) return;
-        let target = href;
-        try { target = decodeURIComponent(target); } catch (error) {}
-        const resolvedId = resolveWikiLinkTarget(target);
-        if (resolvedId) {
-          anchor.setAttribute('href', `#${encodeURIComponent(resolvedId)}`);
-          anchor.setAttribute('data-wikilink', resolvedId);
-          anchor.addEventListener('click', event => {
-            event.preventDefault();
-            openDoc(resolvedId);
-          });
-          anchor.classList.add('wikilink');
+          return `<span class="wikilink wikilink-unresolved" title="아직 생성되지 않은 노트">${escapeHtml(display)}</span>`;
         }
       });
-      html = wrapper.innerHTML;
 
-      // Obsidian Callouts: > [!quote] Title
-      html = html.replace(/<blockquote>\s*<p>\[!(\w+)\]\s*([^\n<]*)(?:<br\s*\/?>|\n)?([\s\S]*?)<\/p>\s*<\/blockquote>/gi, (match, type, title, rest) => {
+      // 4. Parse Markdown using Marked.js
+      let html = window.marked ? marked.parse(processed) : processed;
+
+      // 5. Transform Obsidian Callouts inside Blockquotes: > [!quote] Title + 📋 원클릭 인용 복사 버튼
+      html = html.replace(/<blockquote>\s*<p>\[!(\w+)\]\s*([^\n<]*)(?:<br>|\n)?([\s\S]*?)<\/blockquote>/gi, (match, type, title, rest) => {
         const calloutStyles = {
           quote: { border: 'border-brand-500/40 bg-brand-500/5 dark:bg-brand-500/10', icon: 'quote', color: 'text-brand-600 dark:text-brand-400', defaultTitle: '원문 발췌' },
           abstract: { border: 'border-mint-500/40 bg-mint-500/5 dark:bg-mint-500/10', icon: 'sparkles', color: 'text-mint-600 dark:text-mint-400', defaultTitle: '핵심 테제' },
@@ -2336,13 +2285,15 @@
         };
         const st = calloutStyles[type.toLowerCase()] || calloutStyles.quote;
         const headerTitle = (title && title.trim()) ? title.trim() : st.defaultTitle;
-        const calloutContent = String(rest || '').trim();
+
+        // Strip HTML tags to create clean plain text for One-Click Quote Copy
         const tempDiv = document.createElement('div');
-        tempDiv.innerHTML = calloutContent;
+        tempDiv.innerHTML = `<p>${rest}`;
         const plainQuote = (tempDiv.textContent || tempDiv.innerText || '').trim();
         const docTitle = (currentDocId && DB.docs[currentDocId]) ? DB.docs[currentDocId].title : '';
         const quoteIdx = calloutQuotesStore.length;
         calloutQuotesStore.push(`${plainQuote}\n— 홍동우 목사, 「${docTitle}」 (${headerTitle})`);
+
         return `
           <div class="callout-card ${st.border} group">
             <div class="flex items-center justify-between gap-2 mb-2.5">
@@ -2354,13 +2305,19 @@
                 <span>📋 인용 복사</span>
               </button>
             </div>
-            <div class="text-sm sm:text-[15.5px] leading-relaxed space-y-2 text-slate-700 dark:text-slate-200">${calloutContent}</div>
-          </div>`;
+            <div class="text-sm sm:text-[15.5px] leading-relaxed space-y-2 text-slate-700 dark:text-slate-200">
+              <p>${rest}
+            </div>
+          </div>
+        `;
       });
 
-      // 코드 블록과 위키 링크 placeholder 복원
-      html = html.replace(/@@CODEBLOCK_(\d+)@@/g, (_, idx) => codeBlocks[Number(idx)] || '');
-      html = html.replace(/@@WIKILINK_(\d+)@@/g, (_, idx) => wikiLinks[Number(idx)] || '');
+      // 6. Restore Code Blocks
+      html = html.replace(/@@CODEBLOCK_(\d+)@@/g, (_, idx) => codeBlocks[Number(idx)]);
+
+      // 7. Route local Markdown/file links through the archive's single-page navigation.
+      html = rewriteMarkdownDocumentLinks(html);
+
       return html;
     }
 
@@ -2379,7 +2336,6 @@
 
       if (headings.length < 2) {
         tocWrapper.classList.add('hidden');
-        tocList.innerHTML = '';
         return;
       }
 
@@ -2601,10 +2557,8 @@
         if (!q) return true;
         const inTitle = (doc.title || '').toLowerCase().includes(q);
         const inSubject = (doc.subject || '').toLowerCase().includes(q);
-        const scriptureText = Array.isArray(doc.scripture) ? doc.scripture.join(' ') : String(doc.scripture || '');
-        const tagsText = Array.isArray(doc.tags) ? doc.tags.join(' ') : String(doc.tags || '');
-        const inScripture = scriptureText.toLowerCase().includes(q);
-        const inTags = tagsText.toLowerCase().includes(q);
+        const inScripture = (doc.scripture || []).join(' ').toLowerCase().includes(q);
+        const inTags = (doc.tags || []).join(' ').toLowerCase().includes(q);
         const inBody = (doc.body || '').toLowerCase().includes(q);
         return inTitle || inSubject || inScripture || inTags || inBody;
       });
@@ -2619,7 +2573,7 @@
 
       listEl.innerHTML = filtered.slice(0, 40).map(doc => {
         const isRaw = doc.section === 'raw';
-        const badge = isRaw ? '📖 RAW' : `🧠 ${String(doc.category || 'WIKI').toUpperCase()}`;
+        const badge = isRaw ? '📖 RAW' : `🧠 ${doc.category.toUpperCase()}`;
         let snippet = doc.subject || '';
         if (q && doc.body) {
           const idx = doc.body.toLowerCase().indexOf(q);
